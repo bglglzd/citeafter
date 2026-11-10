@@ -1,0 +1,335 @@
+{
+  "schema_version": 1,
+  "id": "H10",
+  "title": "Current v2 support saved at the inclusive knowledge instant",
+  "recipe": "discount_quote",
+  "clause": "standard",
+  "inputs": {
+    "amount": "2345.67",
+    "currency": "USD"
+  },
+  "business_at": "2030-01-06T19:00:00-05:00",
+  "created_known_at": "2030-01-04T20:30:00+05:30",
+  "authoring": {
+    "provenance": "Fresh-context independent agent-authored synthetic blind annotation from contract and frozen policy bytes only; no implementation, model, customer data or human study output.",
+    "implementation_or_model_output_used": false,
+    "customer_data": false,
+    "human_study": false,
+    "holdout": true
+  },
+  "dependency_coverage": {
+    "declared_paths": [
+      "/clauses/standard/kind",
+      "/clauses/standard/normative_text",
+      "/clauses/standard/rate_percent",
+      "/clauses/standard/minimum_amount",
+      "/clauses/standard/currency"
+    ],
+    "required_paths": [
+      "/clauses/standard/kind",
+      "/clauses/standard/normative_text",
+      "/clauses/standard/rate_percent",
+      "/clauses/standard/minimum_amount",
+      "/clauses/standard/currency"
+    ],
+    "proven": true,
+    "manual_coverage_may_be_inferred_from_edges": false
+  },
+  "initial_expected": {
+    "selected_source_version": "v2",
+    "citation_source_version": "v2",
+    "result_status": "supported",
+    "output": {
+      "eligible": true,
+      "discount_amount": "187.65",
+      "net_amount": "2158.02",
+      "currency": "USD"
+    },
+    "read_values": {
+      "/clauses/standard/kind": "discount",
+      "/clauses/standard/normative_text": "",
+      "/clauses/standard/rate_percent": "8.00",
+      "/clauses/standard/minimum_amount": "1000.00",
+      "/clauses/standard/currency": "USD"
+    },
+    "gate": {
+      "support_gate": "allowed_with_fresh_preview",
+      "operational_known_at": "2030-01-04T20:30:00+05:30",
+      "source_health": "fresh_fixture_injection",
+      "pinned_business_at_unchanged": true,
+      "old_generation_preview": "initial_fresh_preview",
+      "fresh_preview_requires_final_recheck": true
+    }
+  },
+  "after_v2": {
+    "known_at": "2030-01-04T15:00:00Z",
+    "selected_source_version": "v2",
+    "saved_support_version_before_recheck": "v2",
+    "impact_class": "unaffected",
+    "reason_codes": [
+      "saved_support_already_uses_current_v2"
+    ],
+    "reason_paths": [],
+    "independently_reevaluated_output": {
+      "eligible": true,
+      "discount_amount": "187.65",
+      "net_amount": "2158.02",
+      "currency": "USD"
+    },
+    "result_status": "supported",
+    "changed_primary_clause_paths": [],
+    "changed_required_paths": [],
+    "declared_paths_changed": [],
+    "binary_affected_metric_eligible": true,
+    "gate_before_recheck": {
+      "support_gate": "allowed_with_fresh_preview",
+      "operational_known_at": "2030-01-04T15:00:00Z",
+      "source_health": "fresh_fixture_injection",
+      "pinned_business_at_unchanged": true,
+      "old_generation_preview": "same_generation_preview_current",
+      "fresh_preview_requires_final_recheck": true
+    },
+    "recheck": {
+      "eligible": false,
+      "recipe_execution_expected": false,
+      "new_claim_and_action_revision": false,
+      "support_source_version_after_handling": "v2",
+      "citation_source_version_after_handling": "v2",
+      "gate_after_handling": {
+        "support_gate": "allowed_with_fresh_preview",
+        "operational_known_at": "2030-01-04T15:00:00Z",
+        "source_health": "fresh_fixture_injection",
+        "pinned_business_at_unchanged": true,
+        "old_generation_preview": "same_generation_preview_current",
+        "fresh_preview_requires_final_recheck": true
+      }
+    }
+  },
+  "after_v3": {
+    "without_v2_recheck": {
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "basis_source_version": "v2",
+      "impact_class": "unaffected",
+      "reason_codes": [
+        "required_values_equivalent_original_citations_preserved"
+      ],
+      "reason_paths": [],
+      "independently_reevaluated_output": {
+        "eligible": true,
+        "discount_amount": "187.65",
+        "net_amount": "2158.02",
+        "currency": "USD"
+      },
+      "result_status": "supported",
+      "v2_recheck_performed": false,
+      "recheck_eligible": false,
+      "recipe_execution_expected": false,
+      "new_support_version_if_rechecked": null,
+      "support_source_version_after_handling": "v2",
+      "citation_source_version_without_recheck": "v2",
+      "citation_source_version_after_handling": "v2",
+      "may_move_old_citation_to_new_bytes": false,
+      "semantic_equivalence_assessment_only": true,
+      "gate_before_recheck": {
+        "support_gate": "allowed_with_fresh_preview",
+        "operational_known_at": "2030-01-08T09:00:00Z",
+        "source_health": "fresh_fixture_injection",
+        "pinned_business_at_unchanged": true,
+        "old_generation_preview": "refused_generation_changed_refresh_preview",
+        "fresh_preview_requires_final_recheck": true
+      },
+      "gate_after_handling": {
+        "support_gate": "allowed_with_fresh_preview",
+        "operational_known_at": "2030-01-08T09:00:00Z",
+        "source_health": "fresh_fixture_injection",
+        "pinned_business_at_unchanged": true,
+        "old_generation_preview": "refused_generation_changed_refresh_preview",
+        "fresh_preview_requires_final_recheck": true
+      },
+      "outbox_count_before_optional_release": 0
+    },
+    "after_v2_handling": {
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "basis_source_version": "v2",
+      "impact_class": "unaffected",
+      "reason_codes": [
+        "required_values_equivalent_original_citations_preserved"
+      ],
+      "reason_paths": [],
+      "independently_reevaluated_output": {
+        "eligible": true,
+        "discount_amount": "187.65",
+        "net_amount": "2158.02",
+        "currency": "USD"
+      },
+      "result_status": "supported",
+      "v2_recheck_performed": false,
+      "recheck_eligible": false,
+      "recipe_execution_expected": false,
+      "new_support_version_if_rechecked": null,
+      "support_source_version_after_handling": "v2",
+      "citation_source_version_without_recheck": "v2",
+      "citation_source_version_after_handling": "v2",
+      "may_move_old_citation_to_new_bytes": false,
+      "semantic_equivalence_assessment_only": true,
+      "gate_before_recheck": {
+        "support_gate": "allowed_with_fresh_preview",
+        "operational_known_at": "2030-01-08T09:00:00Z",
+        "source_health": "fresh_fixture_injection",
+        "pinned_business_at_unchanged": true,
+        "old_generation_preview": "refused_generation_changed_refresh_preview",
+        "fresh_preview_requires_final_recheck": true
+      },
+      "gate_after_handling": {
+        "support_gate": "allowed_with_fresh_preview",
+        "operational_known_at": "2030-01-08T09:00:00Z",
+        "source_health": "fresh_fixture_injection",
+        "pinned_business_at_unchanged": true,
+        "old_generation_preview": "refused_generation_changed_refresh_preview",
+        "fresh_preview_requires_final_recheck": true
+      },
+      "outbox_count_before_optional_release": 0
+    }
+  },
+  "historical_queries": [
+    {
+      "id": "H10-Q01",
+      "query_kind": "before_first_observation",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-03T08:59:59.999999Z",
+      "selected_source_version": null,
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [
+        "no_eligible_source_at_knowledge_boundary"
+      ],
+      "decision_exists_at_known_at": false,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    },
+    {
+      "id": "H10-Q02",
+      "query_kind": "exact_first_observation",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-03T09:00:00Z",
+      "selected_source_version": "v1",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "234.57",
+        "net_amount": "2111.10",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "decision_exists_at_known_at": false,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    },
+    {
+      "id": "H10-Q03",
+      "query_kind": "one_microsecond_before_v2_knowledge",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-04T14:59:59.999999Z",
+      "selected_source_version": "v1",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "234.57",
+        "net_amount": "2111.10",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "decision_exists_at_known_at": false,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    },
+    {
+      "id": "H10-Q04",
+      "query_kind": "exact_v2_knowledge",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-04T15:00:00Z",
+      "selected_source_version": "v2",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "187.65",
+        "net_amount": "2158.02",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "decision_exists_at_known_at": true,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    },
+    {
+      "id": "H10-Q05",
+      "query_kind": "one_microsecond_before_effective_with_all_versions_known",
+      "valid_at": "2030-01-07T05:29:59.999999+05:30",
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v1",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "234.57",
+        "net_amount": "2111.10",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "decision_exists_at_known_at": true,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    },
+    {
+      "id": "H10-Q06",
+      "query_kind": "exact_effective_one_microsecond_before_v3_knowledge",
+      "valid_at": "2030-01-06T19:00:00-05:00",
+      "known_at": "2030-01-08T08:59:59.999999Z",
+      "selected_source_version": "v2",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "187.65",
+        "net_amount": "2158.02",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "decision_exists_at_known_at": true,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    },
+    {
+      "id": "H10-Q07",
+      "query_kind": "exact_effective_exact_v3_knowledge",
+      "valid_at": "2030-01-07T00:00:00Z",
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "187.65",
+        "net_amount": "2158.02",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "decision_exists_at_known_at": true,
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-06T19:00:00-05:00"
+    }
+  ],
+  "action_state": {
+    "initial": "pending",
+    "initial_release": null,
+    "v2_release": null,
+    "after_v2_handling_plan": "retain_saved_revision_refresh_preview_or_keep_review_block",
+    "branch_note": "The without_v2_recheck and after_v2_handling tracks are mutually exclusive counterfactual branches; their outbox records must never be combined.",
+    "after_v3_replay": {
+      "operation": "no_release_performed_leave_pending",
+      "receipt_ref": null,
+      "original_support_source_version": null,
+      "outbox_count_in_handled_branch": 0,
+      "history_may_rewrite_released_payload": false
+    }
+  }
+}

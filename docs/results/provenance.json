@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "product": "citeafter",
+  "data_scope": "Agent-authored synthetic policies and decisions, not customers or a human study",
+  "freeze": {
+    "frozen_at": "2026-11-10T18:52:56.205036+00:00",
+    "source_sha": "36e3c5a3d3c672f82df065fec6ebc903744aae11",
+    "files": [
+      {
+        "path": "citeafter/policy.py",
+        "sha256": "a1ae2c140ad1f6b35176461a3d59f2f4c1195dde56b2b0ed8bf858e323a17915",
+        "bytes": 12297
+      },
+      {
+        "path": "citeafter/recipes.py",
+        "sha256": "f2a71e56b3126aefbc10151448400a10c147f2da33d828225aa6f421c43eac16",
+        "bytes": 7874
+      },
+      {
+        "path": "citeafter/store.py",
+        "sha256": "a193be8de467045345706a4a9a95a081b78288ebbf3babbe6720c6db01cc3ba4",
+        "bytes": 8772
+      },
+      {
+        "path": "citeafter/engine.py",
+        "sha256": "fb4051bb583677f3b344e77b2e2148d2bd3058f923972f5cd48ca164ceab3090",
+        "bytes": 30880
+      },
+      {
+        "path": "citeafter/http_source.py",
+        "sha256": "08032e14d030db225e39a1e68e6f382013feae2b9e06ee10c9a7d261a3d0917d",
+        "bytes": 15461
+      },
+      {
+        "path": "citeafter/evaluation.py",
+        "sha256": "9321d9c9a32a8c112ebde8212e10f6b89c1da4f623e30fddbb1051ac01966539",
+        "bytes": 36114
+      },
+      {
+        "path": "pyproject.toml",
+        "sha256": "449dc8be1fa77f2b07ceb6178cb596c5470d6a54362535e381711671df0f3bd8",
+        "bytes": 792
+      },
+      {
+        "path": "requirements-dev.txt",
+        "sha256": "b4bb3887c89e7e289c6acab60d3d9dbd8e8f128171dea14f8ff5bf1c1730dd6a",
+        "bytes": 60
+      },
+      {
+        "path": "citeafter/examples/observations.json",
+        "sha256": "39be3a605a50314d50a4e596ef7835dc4bf5324cb04167019074bbef498978e5",
+        "bytes": 1793
+      },
+      {
+        "path": "citeafter/examples/policies/v1.json",
+        "sha256": "d28ea2ab4e2b94e7577f027671e430fb47a085f1afba8de1a16645627ee45495",
+        "bytes": 808
+      },
+      {
+        "path": "citeafter/examples/policies/v2.json",
+        "sha256": "714d93f7662add307d7d0d4e178a5e0b2bf0abcf7aa678bbb24096477d3824d2",
+        "bytes": 894
+      },
+      {
+        "path": "citeafter/examples/policies/v3.json",
+        "sha256": "f46122370115e3d80d89e3c177748a8a2da12553288c970681b381ff363ad226",
+        "bytes": 893
+      }
+    ],
+    "runtime": {
+      "python": "3.11.15",
+      "implementation": "CPython",
+      "sqlite": "3.53.1",
+      "os": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "configuration": {
+      "source_ttl_seconds": 60,
+      "fixture_clock": "explicit callable engine clock, documented synthetic injection",
+      "network": "none during decision scoring",
+      "recipe_evaluator": "citeafter-recipes-v1",
+      "renderer": "citeafter-render-v1"
+    }
+  },
+  "holdout": {
+    "authoring_started_at": "2026-11-10T18:55:13Z",
+    "sealed_at": "2026-11-10T18:58:45.939851+00:00",
+    "original_private_manifest_sha256": "d5b23f852393762062c1f06b180c765a93261a69650da4d2c4b5fd81515dce6c",
+    "files": [
+      {
+        "file": "citeafter/examples/heldout/H01.json",
+        "bytes": 12767,
+        "sha256": "4c29f1de09eb55656aa715e5fe70f5707a7a3f4868feea9b76a7b42f557a92e1"
+      },
+      {
+        "file": "citeafter/examples/heldout/H02.json",
+        "bytes": 12464,
+        "sha256": "2d4f45b3a4e38490e80f0615370c7b397103563d78f72808ffb53912bc60f15d"
+      },
+      {
+        "file": "citeafter/examples/heldout/H03.json",
+        "bytes": 12323,
+        "sha256": "612683d6d608b640e4d9a27e69cd55f2018f9021b6f19318eaca48971edf79cf"
+      },
+      {
+        "file": "citeafter/examples/heldout/H04.json",
+        "bytes": 12513,
+        "sha256": "8ae0a34c46eae6a68592de2ad12006466f791f787069b1de4d185d233b5ef7b3"
+      },
+      {
+        "file": "citeafter/examples/heldout/H05.json",
+        "bytes": 11384,
+        "sha256": "b60cb654b4d56e3f28fb1d9cf0cc650bd2d0c5bdad24e112c96478d753132ee6"
+      },
+      {
+        "file": "citeafter/examples/heldout/H06.json",
+        "bytes": 11731,
+        "sha256": "86a2dedd4d416ba55f2cf0f2918b05db550d3801bff2cc3099cb7ea6b25b5789"
+      },
+      {
+        "file": "citeafter/examples/heldout/H07.json",
+        "bytes": 11625,
+        "sha256": "e07076f99035f3718cfcc1b15676a26dc070f63ad76b0858455fcbf0ff8aa60b"
+      },
+      {
+        "file": "citeafter/examples/heldout/H08.json",
+        "bytes": 11069,
+        "sha256": "c9eb17a298f0b2dca1404a385707b0ac4806af2ab0b3aa4ec9c4b31a4d1e6820"
+      },
+      {
+        "file": "citeafter/examples/heldout/H09.json",
+        "bytes": 11084,
+        "sha256": "f3e40afa1f796ef96c52a1bd9117bcb404908d290f6e9b72681caea9062d366e"
+      },
+      {
+        "file": "citeafter/examples/heldout/H10.json",
+        "bytes": 12244,
+        "sha256": "3a31fa169bb93903c94c561247b7473fd61f67515de5cf0cee5c14ba390b1f22"
+      }
+    ],
+    "first_report_sha256": "01132bc8e36c8b26c5e8695a0c5fab50cb3695baa0d0c07a460503424a9d435c",
+    "first_report": "heldout-first-v1.json",
+    "first_report_passed": false,
+    "root_first_inspection": "After first scored report finished; original files/reports remain unchanged",
+    "now_revealed": "These cases are published regression data; no future blind claim is made"
+  },
+  "annotation_disagreement": {
+    "cases": [
+      "H07",
+      "H09"
+    ],
+    "original_strict_passed_decisions": 8,
+    "total_holdout_decisions": 10,
+    "original_reason_path_mismatches": 6,
+    "disposition": "Bounded explanation completeness / causal-versus-context path ambiguity; no changes to frozen scorer, policy rules or original labels. Original strict failure remains visible."
+  }
+}
