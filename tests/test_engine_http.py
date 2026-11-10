@@ -1,4 +1,5 @@
 """Engine transport integration against a separately launched HTTP publisher."""
+
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -23,7 +24,7 @@ FLAGS = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
 # The publisher owns its socket and serves the exact supplied bytes. Its control
 # channel is distinct from /policy; no transport or engine function is replaced.
-PUBLISHER = r'''
+PUBLISHER = r"""
 from base64 import b64decode
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json, threading
@@ -72,7 +73,7 @@ server.daemon_threads = True
 print(json.dumps({'port': server.server_port}), flush=True)
 server.serve_forever(poll_interval=0.05)
 server.server_close()
-'''
+"""
 
 
 class Clock:
@@ -94,15 +95,19 @@ def database(path):
 
 class Publisher:
     def __enter__(self):
-        self.process = subprocess.Popen([sys.executable, "-B", "-u", "-c", PUBLISHER],
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                        creationflags=FLAGS)
+        self.process = subprocess.Popen(
+            [sys.executable, "-B", "-u", "-c", PUBLISHER],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            creationflags=FLAGS,
+        )
         started = queue.Queue()
         threading.Thread(target=lambda: started.put(self.process.stdout.readline()), daemon=True).start()
         try:
             self.port = json.loads(started.get(timeout=8))["port"]
         except BaseException:
-            self.process.kill(); self.process.communicate()
+            self.process.kill()
+            self.process.communicate()
             raise
         self.url = f"http://127.0.0.1:{self.port}/policy"
         return self
@@ -111,8 +116,12 @@ class Publisher:
         connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=3)
         try:
             body = json.dumps(data or {}).encode() if data is not None else None
-            connection.request("POST" if data is not None else "GET", path, body,
-                               {"Content-Type": "application/json"} if body else {})
+            connection.request(
+                "POST" if data is not None else "GET",
+                path,
+                body,
+                {"Content-Type": "application/json"} if body else {},
+            )
             response = connection.getresponse()
             result = response.read()
             if response.status != 200:
@@ -141,7 +150,8 @@ class Publisher:
                 raise AssertionError((self.process.returncode, output, errors))
         finally:
             if self.process.poll() is None:
-                self.process.kill(); self.process.communicate()
+                self.process.kill()
+                self.process.communicate()
 
 
 def rule(status=200, *, version="v1", body=None, etag='"v1"', hold=False):
@@ -161,10 +171,14 @@ class EngineHTTPTests(unittest.TestCase):
         self.publisher.configure(rule())
 
     def create(self, action_id="draft", shipping=False):
-        return self.engine.create_action(action_id, label="Synthetic draft", business_at="2030-01-08T12:00:00Z",
-                                        recipe="shipping_days" if shipping else "discount_quote",
-                                        clause="shipping" if shipping else "standard",
-                                        inputs={"destination": "domestic"} if shipping else {"amount": "2000.00", "currency": "USD"})
+        return self.engine.create_action(
+            action_id,
+            label="Synthetic draft",
+            business_at="2030-01-08T12:00:00Z",
+            recipe="shipping_days" if shipping else "discount_quote",
+            clause="shipping" if shipping else "standard",
+            inputs={"destination": "domestic"} if shipping else {"amount": "2000.00", "currency": "USD"},
+        )
 
     def test_200_304_changed_200_preserve_first_observation_and_exact_release_support(self):
         first = self.engine.refresh()
@@ -209,8 +223,11 @@ class EngineHTTPTests(unittest.TestCase):
         self.clock.now = "2030-01-04T12:00:00Z"
         self.engine.refresh()
         self.create()
-        for response, expected in [(rule(404), "http_status"), (rule(body=b'{"broken":'), "json"),
-                                   (rule(hold=True), "timeout")]:
+        for response, expected in [
+            (rule(404), "http_status"),
+            (rule(body=b'{"broken":'), "json"),
+            (rule(hold=True), "timeout"),
+        ]:
             with self.subTest(error=expected):
                 preview = self.engine.preview("draft")
                 self.publisher.configure(response)
@@ -246,7 +263,9 @@ class EngineHTTPTests(unittest.TestCase):
         failed = self.engine.refresh()
         self.assertFalse(failed["accepted"])
         with database(self.path) as connection:
-            received, received_sha = connection.execute("SELECT received,received_sha FROM checks ORDER BY id DESC LIMIT 1").fetchone()
+            received, received_sha = connection.execute(
+                "SELECT received,received_sha FROM checks ORDER BY id DESC LIMIT 1"
+            ).fetchone()
             cached_sha, etag = connection.execute("SELECT source_sha,etag FROM cache").fetchone()
         self.assertEqual((received, received_sha), (invalid, digest(invalid)))
         self.assertEqual(cached_sha, digest((POLICIES / "v1.json").read_bytes()))

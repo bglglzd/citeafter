@@ -1,4 +1,5 @@
 """Independent-process importer/release orderings over the actual SQLite ledger."""
+
 from contextlib import contextmanager
 import json
 from pathlib import Path
@@ -19,7 +20,7 @@ POLICIES = ROOT / "citeafter/examples/policies"
 FLAGS = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 NOW = "2030-01-04T15:00:00Z"
 
-WORKER = r'''
+WORKER = r"""
 import json,os,sys
 from pathlib import Path
 from citeafter.engine import Engine
@@ -45,18 +46,25 @@ for line in sys.stdin:
         print(json.dumps({'ok': True, 'result': result}), flush=True)
     except CiteafterError as error:
         print(json.dumps({'ok': False, 'error': error.code}), flush=True)
-'''
+"""
 
 
 class Worker:
     def __init__(self, path):
-        self.process = subprocess.Popen([sys.executable, "-B", "-u", "-c", WORKER, str(path)],
-                                        cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE, creationflags=FLAGS)
+        self.process = subprocess.Popen(
+            [sys.executable, "-B", "-u", "-c", WORKER, str(path)],
+            cwd=ROOT,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            creationflags=FLAGS,
+        )
         self.messages = queue.Queue()
+
         def read():
             for line in self.process.stdout:
                 self.messages.put(json.loads(line))
+
         self.reader = threading.Thread(target=read, daemon=True)
         self.reader.start()
         ready = self.receive()
@@ -74,7 +82,8 @@ class Worker:
             raise AssertionError(started)
 
     def send(self, value):
-        self.process.stdin.write((value + "\n").encode()); self.process.stdin.flush()
+        self.process.stdin.write((value + "\n").encode())
+        self.process.stdin.flush()
 
     def close(self):
         try:
@@ -87,8 +96,10 @@ class Worker:
                 raise AssertionError((self.process.returncode, errors))
         finally:
             if self.process.poll() is None:
-                self.process.kill(); self.process.wait()
-            self.process.stdout.close(); self.process.stderr.close()
+                self.process.kill()
+                self.process.wait()
+            self.process.stdout.close()
+            self.process.stderr.close()
 
 
 @contextmanager
@@ -115,10 +126,14 @@ class EngineRaceTests(unittest.TestCase):
         return worker
 
     def create(self, action_id, shipping=False):
-        return self.engine.create_action(action_id, label="Synthetic process race", business_at="2030-01-08T12:00:00Z",
-                                        recipe="shipping_days" if shipping else "discount_quote",
-                                        clause="shipping" if shipping else "standard",
-                                        inputs={"destination": "domestic"} if shipping else {"amount": "2000.00", "currency": "USD"})
+        return self.engine.create_action(
+            action_id,
+            label="Synthetic process race",
+            business_at="2030-01-08T12:00:00Z",
+            recipe="shipping_days" if shipping else "discount_quote",
+            clause="shipping" if shipping else "standard",
+            inputs={"destination": "domestic"} if shipping else {"amount": "2000.00", "currency": "USD"},
+        )
 
     def test_importer_commits_before_release_old_token_refuses_and_fresh_unaffected_token_works(self):
         self.create("discount")
@@ -134,7 +149,9 @@ class EngineRaceTests(unittest.TestCase):
             self.assertEqual(releaser.receive(), {"ok": False, "error": "stale_preview"})
         with database(self.path) as connection:
             self.assertEqual(connection.execute("SELECT count(*) FROM outbox").fetchone()[0], 0)
-        with patch("citeafter.engine.evaluate_recipe", side_effect=AssertionError("Unexpected recipe execution")):
+        with patch(
+            "citeafter.engine.evaluate_recipe", side_effect=AssertionError("Unexpected recipe execution")
+        ):
             fresh = self.engine.preview("shipping")
         self.assertEqual(fresh["payload"]["citation_source_version"], "v1")
         self.assertEqual(fresh["source_version"], "v2")
