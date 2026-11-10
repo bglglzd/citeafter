@@ -33,7 +33,7 @@ A preview binds the exact action revision, assessment, source/freshness generati
 
 ## Real transport and recovery
 
-The HTTP source adapter uses an operator-selected pinned endpoint, bounded JSON/UTF-8 input, explicit timeout and conditional ETag requests. It follows no redirects or implicit retries. A304 validates a prior cached representation; it does not supply a business-effective date. Availability/freshness and semantic impact remain separate. Timeout, malformed response or removal cannot silently preserve release permission.
+The HTTP source adapter uses an operator-selected pinned endpoint, bounded JSON/UTF-8 input, explicit timeout and conditional ETag requests. It follows no redirects or implicit retries. A 304 validates a prior cached representation; it does not supply a business-effective date. Availability/freshness and semantic impact remain separate. Timeout, malformed response or removal cannot silently preserve release permission.
 
 SQLite retains original source/claim/action revisions, assessments and outbox bindings across restart. Integrity or citation corruption fails closed and preserves original data. Tests must exercise actual separate-process updates, preview races, idempotency and failure recovery.
 
