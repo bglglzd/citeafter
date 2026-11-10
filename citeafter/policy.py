@@ -1,6 +1,7 @@
 """Closed policy parsing, temporal selection and byte-bound rendered citations."""
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
+from copy import deepcopy
 import hashlib
 import json
 import math
@@ -9,7 +10,7 @@ import re
 RENDERER = "citeafter-render-v1"
 MAX_SOURCE_BYTES = 256 * 1024
 IDENTIFIER = re.compile(r"[A-Za-z][A-Za-z0-9._-]{0,79}\Z")
-STAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})\Z")
+STAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)\Z")
 NUMBER = re.compile(r"(?:0|[1-9]\d{0,10})(?:\.\d{1,2})?\Z")
 
 
@@ -171,7 +172,7 @@ def semantic_value(path, value):
     parts = tokens(path)
     if len(parts) == 3 and parts[0] == "clauses" and parts[-1] in ("rate_percent", "minimum_amount"):
         return format(decimal_value(value).quantize(Decimal("0.01")), "f")
-    return value
+    return deepcopy(value)
 
 
 def render_policy(policy):
@@ -210,6 +211,8 @@ def source_record(raw, observed_at):
 def select_source(records, valid_at, known_at):
     valid_at, known_at = instant(valid_at), instant(known_at)
     known = [row for row in records if row["observed_at"] <= known_at]
+    if len({row["policy_id"] for row in known}) > 1:
+        return {"status": "needs_review", "reason": "mixed_policy_families", "source": None}
     by_label = {}
     for row in known:
         by_label.setdefault(row["version_id"], []).append(row)

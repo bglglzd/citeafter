@@ -21,8 +21,8 @@ def check_inputs(recipe, inputs):
         fields(inputs, ["destination"], "shipping input")
         require(bool(text(inputs["destination"], 80)), "Destination cannot be empty")
     elif recipe == "manual_claim":
-        fields(inputs, ["statement"], "manual input")
-        require(bool(text(inputs["statement"], 2000)), "Manual statement cannot be empty")
+        fields(inputs, ["text"], "manual input")
+        require(bool(text(inputs["text"], 2000)), "Manual text cannot be empty")
     else:
         raise CiteafterError("invalid_input", "Unknown recipe")
 

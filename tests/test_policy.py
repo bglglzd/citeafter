@@ -105,7 +105,7 @@ class TemporalEvidence(unittest.TestCase):
         first, second, _ = sources()
         old = evaluate_recipe(first, "discount_quote", "vip", {"amount": "7000.00", "currency": "USD"})
         self.assertEqual(assess_support(old, inspect_recipe(second, "discount_quote", "vip", old["inputs"]))["impact_class"], "needs_review")
-        manual = evaluate_recipe(first, "manual_claim", "manual_note", {"statement": "Review terms"}, ["/clauses/shipping/days"])
+        manual = evaluate_recipe(first, "manual_claim", "manual_note", {"text": "Review terms"}, ["/clauses/shipping/days"])
         now = inspect_recipe(second, "manual_claim", "manual_note", manual["inputs"], ["/clauses/shipping/days"])
         self.assertFalse(manual["coverage_proven"])
         self.assertEqual(assess_support(manual, now)["impact_class"], "needs_review")
@@ -115,7 +115,7 @@ class TemporalEvidence(unittest.TestCase):
         result = evaluate_recipe(first, "discount_quote", "standard", {"amount": "2000.00", "currency": "EUR"})
         self.assertIsNone(result["output"])
         self.assertEqual(result["reason_paths"], ["/clauses/standard/currency"])
-        manual = evaluate_recipe(first, "manual_claim", "manual_note", {"statement": "Review"}, ["/clauses/manual_note"])
+        manual = evaluate_recipe(first, "manual_claim", "manual_note", {"text": "Review"}, ["/clauses/manual_note"])
         self.assertEqual(len(manual["citations"]), 1)
         rendered = render_policy(first["policy"])
         quote = manual["citations"][0]
@@ -125,6 +125,24 @@ class TemporalEvidence(unittest.TestCase):
         self.assertEqual(instant("2030-01-04T15:00:00+03:00"), instant("2030-01-04T12:00:00Z"))
         for value in ["2030-01-04", "2030-01-04T12:00:00", "2030-02-30T00:00:00Z"]:
             with self.assertRaises(CiteafterError): instant(value)
+
+    def test_invalid_offset_minutes_cannot_be_normalized_into_a_different_instant(self):
+        for value in ["2030-01-04T12:00:00+01:60", "2030-01-04T12:00:00+00:60", "2030-01-04T12:00:00-02:99"]:
+            with self.assertRaises(CiteafterError): instant(value)
+
+    def test_lineage_cannot_cross_policy_namespaces(self):
+        first, second, _ = sources()
+        other = copy.deepcopy(second["policy"]); other["policy_id"] = "other-policy"
+        mixed = [first, source_record(json.dumps(other).encode(), OBSERVED[1])]
+        self.assertEqual(select_source(mixed, "2030-01-08T12:00:00Z", OBSERVED[1])["reason"], "mixed_policy_families")
+
+    def test_returned_parent_dependency_cannot_mutate_its_source(self):
+        source = sources()[0]
+        inspected = inspect_recipe(source, "manual_claim", "manual_note", {"text": "Review"}, ["/clauses/standard"])
+        inspected["semantic_values"]["/clauses/standard"]["rate_percent"] = "99.00"
+        result = evaluate_recipe(source, "discount_quote", "standard", {"amount": "2000.00", "currency": "USD"})
+        self.assertEqual(result["output"]["discount_amount"], "200.00")
+        self.assertEqual(source["policy"]["clauses"]["standard"]["rate_percent"], "10.00")
 
 
 if __name__ == "__main__":
