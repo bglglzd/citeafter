@@ -18,7 +18,7 @@ The combined class matrix has 10 affected, 10 unaffected and 10 needs-review dec
 
 ## Original held-out disagreements
 
-The [first report](results/heldout-first-v1.json) remains byte-exact, with `passed:false` and six `reason_paths` mismatches across the two v3 branches and v2. No rule, scorer or original label was changed after inspection.
+The [first held-out report](results/heldout-first-v1.json) remains byte-exact, with `passed:false` and six `reason_paths` mismatches across the two v3 branches and v2. The [development report](results/development-frozen-v1.json) uses the same frozen component hashes. No rule, scorer or original label was changed after held-out inspection.
 
 - H07 is blocked for unsupported currency. Its changed rate is present in recorded reads, `changed_required_paths` and the reverse path, but the blocking `reason_paths` field names only currency. The annotation expected both paths.
 - H09 is a manual claim with unproven dependency coverage and an unchanged shipping declaration. The blocking field names the primary manual clause; the annotation also expected the shipping context and a more specific manual-text pointer. No complete coverage, changed shipping edge or supported result is inferred.
