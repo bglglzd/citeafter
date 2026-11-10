@@ -63,6 +63,7 @@ def record_checksum(table, record):
 
 def unpack(row):
     try:
+        require(isinstance(row["data"], str), "Ledger JSON must be stored as text", "integrity")
         data = strict_json(row["data"].encode("utf-8"), limit=2 * 1024 * 1024)
         require(type(data) is dict, "Ledger record must be an object", "integrity")
         require(value_hash(data) == row["checksum"], "Ledger checksum mismatch", "integrity")
