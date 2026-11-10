@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "scope": "Explicit fixture-clock injection outside publisher bodies; first observations do not change on identical delivery",
+  "observations": [
+    {
+      "version_id": "v1",
+      "observed_at": "2030-01-03T09:00:00Z",
+      "policy_path": "policies/v1.json",
+      "sha256": "d28ea2ab4e2b94e7577f027671e430fb47a085f1afba8de1a16645627ee45495"
+    },
+    {
+      "version_id": "v2",
+      "observed_at": "2030-01-04T15:00:00Z",
+      "policy_path": "policies/v2.json",
+      "sha256": "714d93f7662add307d7d0d4e178a5e0b2bf0abcf7aa678bbb24096477d3824d2"
+    },
+    {
+      "version_id": "v3",
+      "observed_at": "2030-01-08T09:00:00Z",
+      "policy_path": "policies/v3.json",
+      "sha256": "f46122370115e3d80d89e3c177748a8a2da12553288c970681b381ff363ad226"
+    }
+  ],
+  "stage_health": {
+    "initial": "successful current freshness receipt at each creation clock",
+    "after_v2": "successful current freshness receipt atT1",
+    "after_v3": "successful current freshness receipt atT2"
+  },
+  "generations": {
+    "v1_known": "G1",
+    "v2_known": "G2",
+    "v3_known": "G3"
+  },
+  "observation_is_not_a_publisher_body_field": true,
+  "release_time_health": [
+    {
+      "decision_id": "D01",
+      "checked_at": "2030-01-04T12:05:00Z",
+      "validated_version": "v1",
+      "generation": "G1",
+      "fresh_preview_at": "2030-01-04T12:05:00Z",
+      "health": "fresh_fixture_injection",
+      "first_observed_at_unchanged": "2030-01-03T09:00:00Z"
+    },
+    {
+      "decision_id": "D20",
+      "checked_at": "2030-01-04T15:05:00Z",
+      "validated_version": "v2",
+      "generation": "G2",
+      "fresh_preview_at": "2030-01-04T15:05:00Z",
+      "health": "fresh_fixture_injection",
+      "first_observed_at_unchanged": "2030-01-04T15:00:00Z"
+    }
+  ]
+}

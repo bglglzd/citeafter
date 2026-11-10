@@ -1,0 +1,345 @@
+{
+  "schema_version": 1,
+  "id": "D02",
+  "title": "First Tuesday discount draft changes from ten to eight percent",
+  "authoring": {
+    "provenance": "agent-authored independently specified synthetic development gold",
+    "customer_data": false,
+    "human_study": false,
+    "holdout": false,
+    "implementation_or_model_output_used": false
+  },
+  "recipe": "discount_quote",
+  "clause": "standard",
+  "inputs": {
+    "amount": "2000.00",
+    "currency": "USD"
+  },
+  "business_at": "2030-01-08T12:00:00Z",
+  "created_known_at": "2030-01-04T12:00:00Z",
+  "dependency_coverage": {
+    "proven": true,
+    "required_paths": [
+      "/clauses/standard/kind",
+      "/clauses/standard/normative_text",
+      "/clauses/standard/rate_percent",
+      "/clauses/standard/minimum_amount",
+      "/clauses/standard/currency"
+    ],
+    "declared_paths": [
+      "/clauses/standard/kind",
+      "/clauses/standard/normative_text",
+      "/clauses/standard/rate_percent",
+      "/clauses/standard/minimum_amount",
+      "/clauses/standard/currency"
+    ],
+    "manual_coverage_may_be_inferred_from_edges": false
+  },
+  "initial_expected": {
+    "selected_source_version": "v1",
+    "result_status": "supported",
+    "output": {
+      "eligible": true,
+      "discount_amount": "200.00",
+      "net_amount": "1800.00",
+      "currency": "USD"
+    },
+    "read_values": {
+      "/clauses/standard/kind": "discount",
+      "/clauses/standard/normative_text": "",
+      "/clauses/standard/rate_percent": "10.00",
+      "/clauses/standard/minimum_amount": "1000.00",
+      "/clauses/standard/currency": "USD"
+    },
+    "citation_source_version": "v1",
+    "gate": {
+      "support_gate": "allowed_with_fresh_preview",
+      "old_generation_preview": "not_applicable_no_earlier_preview",
+      "fresh_preview_requires_final_recheck": true,
+      "source_health": "fresh_by_explicit_fixture_assumption",
+      "operational_known_at": "trusted_stage_clock_not_history_selector",
+      "pinned_business_at_unchanged": true
+    }
+  },
+  "after_v2": {
+    "known_at": "2030-01-04T15:00:00Z",
+    "selected_source_version": "v2",
+    "saved_support_version_before_recheck": "v1",
+    "impact_class": "affected",
+    "reason_paths": [
+      "/clauses/standard/rate_percent"
+    ],
+    "reason_codes": [
+      "changed_required_business_value"
+    ],
+    "result_status": "supported",
+    "independently_reevaluated_output": {
+      "eligible": true,
+      "discount_amount": "160.00",
+      "net_amount": "1840.00",
+      "currency": "USD"
+    },
+    "gate_before_recheck": {
+      "support_gate": "blocked_stale_support",
+      "old_generation_preview": "refused_stale_preview",
+      "fresh_preview_requires_final_recheck": true,
+      "source_health": "fresh_by_explicit_fixture_assumption",
+      "operational_known_at": "trusted_stage_clock_not_history_selector",
+      "pinned_business_at_unchanged": true
+    },
+    "recheck": {
+      "eligible": true,
+      "recipe_execution_expected": true,
+      "new_claim_and_action_revision": true,
+      "support_source_version_after_handling": "v2",
+      "citation_source_version_after_handling": "v2",
+      "gate_after_handling": {
+        "support_gate": "allowed_with_fresh_preview",
+        "old_generation_preview": "refused_stale_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      }
+    },
+    "binary_affected_metric_eligible": true,
+    "changed_primary_clause_paths": [
+      "/clauses/standard/rate_percent"
+    ],
+    "changed_required_paths": [
+      "/clauses/standard/rate_percent"
+    ],
+    "declared_paths_changed": [
+      "/clauses/standard/rate_percent"
+    ]
+  },
+  "after_v3": {
+    "without_v2_recheck": {
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "basis_source_version": "v1",
+      "v2_recheck_performed": false,
+      "impact_class": "affected",
+      "reason_paths": [
+        "/clauses/standard/rate_percent"
+      ],
+      "reason_codes": [
+        "changed_required_business_value"
+      ],
+      "result_status": "supported",
+      "independently_reevaluated_output": {
+        "eligible": true,
+        "discount_amount": "160.00",
+        "net_amount": "1840.00",
+        "currency": "USD"
+      },
+      "gate_before_recheck": {
+        "support_gate": "blocked_stale_support",
+        "old_generation_preview": "refused_stale_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "recheck_eligible": true,
+      "recipe_execution_expected": true,
+      "new_support_version_if_rechecked": "v3",
+      "citation_source_version_without_recheck": "v1",
+      "semantic_equivalence_assessment_only": false,
+      "may_move_old_citation_to_new_bytes": false,
+      "outbox_count_before_optional_release": 0,
+      "gate_after_handling": {
+        "support_gate": "allowed_with_fresh_preview",
+        "old_generation_preview": "refused_stale_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "support_source_version_after_handling": "v3",
+      "citation_source_version_after_handling": "v3"
+    },
+    "after_v2_handling": {
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "basis_source_version": "v2",
+      "v2_recheck_performed": true,
+      "impact_class": "unaffected",
+      "reason_paths": [],
+      "reason_codes": [
+        "unchanged_required_read_values_cosmetic_or_unrelated_update"
+      ],
+      "result_status": "supported",
+      "independently_reevaluated_output": {
+        "eligible": true,
+        "discount_amount": "160.00",
+        "net_amount": "1840.00",
+        "currency": "USD"
+      },
+      "gate_before_recheck": {
+        "support_gate": "allowed_with_fresh_preview",
+        "old_generation_preview": "refused_stale_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "recheck_eligible": false,
+      "recipe_execution_expected": false,
+      "new_support_version_if_rechecked": null,
+      "citation_source_version_without_recheck": "v2",
+      "semantic_equivalence_assessment_only": true,
+      "may_move_old_citation_to_new_bytes": false,
+      "outbox_count_before_optional_release": 0,
+      "gate_after_handling": {
+        "support_gate": "allowed_with_fresh_preview",
+        "old_generation_preview": "refused_stale_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "support_source_version_after_handling": "v2",
+      "citation_source_version_after_handling": "v2"
+    }
+  },
+  "historical_queries": [
+    {
+      "id": "before_first_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-03T08:59:59.999Z",
+      "selected_source_version": null,
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [
+        "source_not_yet_known"
+      ],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": false
+    },
+    {
+      "id": "exact_first_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-03T09:00:00Z",
+      "selected_source_version": "v1",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "200.00",
+        "net_amount": "1800.00",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": false
+    },
+    {
+      "id": "before_v2_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-04T14:59:59.999Z",
+      "selected_source_version": "v1",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "200.00",
+        "net_amount": "1800.00",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "exact_v2_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-04T15:00:00Z",
+      "selected_source_version": "v2",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "160.00",
+        "net_amount": "1840.00",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "after_v2_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-04T15:00:00.001Z",
+      "selected_source_version": "v2",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "160.00",
+        "net_amount": "1840.00",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "before_v3_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-08T08:59:59.999Z",
+      "selected_source_version": "v2",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "160.00",
+        "net_amount": "1840.00",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "exact_v3_observation",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-08T12:00:00Z",
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "result_status": "supported",
+      "output": {
+        "eligible": true,
+        "discount_amount": "160.00",
+        "net_amount": "1840.00",
+        "currency": "USD"
+      },
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-08T12:00:00Z",
+      "decision_exists_at_known_at": true
+    }
+  ],
+  "action_state": {
+    "initial": "pending",
+    "initial_release": null,
+    "after_v2_handling_plan": "remain_pending",
+    "v2_release": null,
+    "after_v3_replay": {
+      "operation": "not_released_without_explicit_operator_action",
+      "receipt_ref": null,
+      "original_support_source_version": null,
+      "outbox_count_in_handled_branch": 0,
+      "history_may_rewrite_released_payload": false
+    },
+    "branch_note": "without_v2_recheck and after_v2_handling are mutually exclusive fixture branches, not extra decisions"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "policy_id": "synthetic-commerce",
+  "version_id": "v1",
+  "parent_version_id": null,
+  "effective_from": "2030-01-01T00:00:00Z",
+  "presentation": {
+    "title": "Commercial policcy"
+  },
+  "clauses": {
+    "standard": {
+      "kind": "discount",
+      "rate_percent": "10.00",
+      "minimum_amount": "1000.00",
+      "currency": "USD",
+      "normative_text": ""
+    },
+    "vip": {
+      "kind": "discount",
+      "rate_percent": "12.00",
+      "minimum_amount": "5000.00",
+      "currency": "USD",
+      "normative_text": ""
+    },
+    "shipping": {
+      "kind": "shipping",
+      "days": 5,
+      "destination": "domestic",
+      "normative_text": ""
+    },
+    "manual_note": {
+      "kind": "manual",
+      "normative_text": "Contact support before dispatch."
+    }
+  }
+}
