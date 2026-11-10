@@ -114,10 +114,7 @@ def validate_source_url(url: str) -> str:
         elif address is None:
             labels = host.split(".")
             if len(host) > 253 or any(
-                not re.fullmatch(
-                    r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", label
-                )
-                for label in labels
+                not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", label) for label in labels
             ):
                 _fail("invalid_url")
     except (ValueError, UnicodeError):
@@ -133,10 +130,7 @@ def _etag(value: str | None, status: int | None = None) -> str | None:
     opaque = value[2:] if value.startswith("W/") else value
     if len(opaque) < 2 or opaque[0] != '"' or opaque[-1] != '"':
         _fail("etag", status)
-    if any(
-        not (ord(c) == 33 or 35 <= ord(c) <= 126 or 128 <= ord(c) <= 255)
-        for c in opaque[1:-1]
-    ):
+    if any(not (ord(c) == 33 or 35 <= ord(c) <= 126 or 128 <= ord(c) <= 255) for c in opaque[1:-1]):
         _fail("etag", status)
     return opaque
 
@@ -176,11 +170,7 @@ def _content_headers(response: http.client.HTTPResponse) -> None:
     parameters = response.headers.get_params(header="Content-Type", failobj=[])[1:]
     charsets = [value for name, value in parameters if name.lower() == "charset"]
     if len(charsets) > 1 or (
-        charsets
-        and (
-            not isinstance(charsets[0], str)
-            or charsets[0].lower() not in ("utf-8", "utf8")
-        )
+        charsets and (not isinstance(charsets[0], str) or charsets[0].lower() not in ("utf-8", "utf8"))
     ):
         _fail("content_type", response.status)
 
@@ -217,9 +207,7 @@ def _perform(url: str, etag: str | None, timeout: float, max_bytes: int) -> dict
                 context=ssl.create_default_context(),
             )
         else:
-            connection = http.client.HTTPConnection(
-                parts.hostname, parts.port, timeout=timeout
-            )
+            connection = http.client.HTTPConnection(parts.hostname, parts.port, timeout=timeout)
         headers = {
             "Accept": "application/json",
             "Accept-Encoding": "identity",
@@ -341,9 +329,7 @@ def fetch_policy(
             _fail("configuration")
         # Isolated startup bypasses user site/config and all proxy/credential env.
         environment = (
-            {"SystemRoot": os.environ["SystemRoot"]}
-            if os.name == "nt" and "SystemRoot" in os.environ
-            else {}
+            {"SystemRoot": os.environ["SystemRoot"]} if os.name == "nt" and "SystemRoot" in os.environ else {}
         )
         process = subprocess.Popen(
             [
@@ -369,11 +355,7 @@ def fetch_policy(
             output, errors = process.communicate(request, timeout=remaining)
         except subprocess.TimeoutExpired:
             _fail("timeout")
-        if (
-            process.returncode != 0
-            or errors
-            or len(output) > 4 * ((max_bytes + 2) // 3) + 8192
-        ):
+        if process.returncode != 0 or errors or len(output) > 4 * ((max_bytes + 2) // 3) + 8192:
             _fail("worker")
         try:
             reply = json.loads(output.decode("ascii"))
@@ -386,9 +368,7 @@ def fetch_policy(
                 _fail("worker")
             status = reply["status"]
             if status is not None and (
-                isinstance(status, bool)
-                or not isinstance(status, int)
-                or not 100 <= status <= 999
+                isinstance(status, bool) or not isinstance(status, int) or not 100 <= status <= 999
             ):
                 _fail("worker")
             _fail(reply["code"], status)
@@ -429,9 +409,7 @@ def fetch_policy(
             _fail("worker")
         if time.monotonic() >= deadline:
             _fail("timeout")
-        return FetchResult(
-            reply["status"], body, reply["etag"], reply["response_sha256"], elapsed()
-        )
+        return FetchResult(reply["status"], body, reply["etag"], reply["response_sha256"], elapsed())
     except TypedFetchError as error:
         failure = error
         error.elapsed_ms = elapsed()

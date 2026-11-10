@@ -1,4 +1,5 @@
 """Closed policy parsing, temporal selection and byte-bound rendered citations."""
+
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from copy import deepcopy
@@ -41,7 +42,7 @@ def instant(value):
     require(isinstance(value, str) and STAMP.fullmatch(value), "Use an explicit-offset ISO instant")
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
-    except ValueError as error:
+    except (ValueError, OverflowError) as error:
         raise CiteafterError("invalid_input", "Invalid calendar instant") from error
     # Fixed precision also makes persisted UTC strings lexically sortable.
     return parsed.isoformat(timespec="microseconds").replace("+00:00", "Z")
@@ -57,8 +58,12 @@ def identifier(value):
 
 
 def text(value, maximum=4000):
-    require(isinstance(value, str) and len(value) <= maximum and not any(0xD800 <= ord(c) <= 0xDFFF for c in value),
-            "Expected bounded Unicode text without lone surrogates")
+    require(
+        isinstance(value, str)
+        and len(value) <= maximum
+        and not any(0xD800 <= ord(c) <= 0xDFFF for c in value),
+        "Expected bounded Unicode text without lone surrogates",
+    )
     return value
 
 
@@ -67,7 +72,10 @@ def fields(value, expected, label):
 
 
 def decimal_value(value, maximum=Decimal("99999999999.99")):
-    require(isinstance(value, str) and NUMBER.fullmatch(value), "Use a nonnegative decimal string with at most two places")
+    require(
+        isinstance(value, str) and NUMBER.fullmatch(value),
+        "Use a nonnegative decimal string with at most two places",
+    )
     try:
         number = Decimal(value)
     except InvalidOperation as error:
@@ -78,19 +86,23 @@ def decimal_value(value, maximum=Decimal("99999999999.99")):
 
 def strict_json(raw, limit=MAX_SOURCE_BYTES):
     require(isinstance(raw, bytes) and len(raw) <= limit, "JSON exceeds the byte limit")
+
     def pairs(items):
         result = {}
         for key, value in items:
             require(key not in result, "Duplicate JSON object key")
             result[key] = value
         return result
+
     def constant(_):
         raise CiteafterError("invalid_input", "Nonfinite JSON number")
+
     try:
         value = json.loads(raw.decode("utf-8", "strict"), object_pairs_hook=pairs, parse_constant=constant)
-    except (UnicodeError, json.JSONDecodeError, RecursionError) as error:
+    except (UnicodeError, ValueError, RecursionError) as error:
         raise CiteafterError("invalid_input", "Expected bounded valid UTF-8 JSON") from error
     nodes = 0
+
     def walk(item, depth):
         nonlocal nodes
         nodes += 1
@@ -99,21 +111,39 @@ def strict_json(raw, limit=MAX_SOURCE_BYTES):
             text(item, limit)
         elif type(item) is dict:
             for key, child in item.items():
-                text(key, limit); walk(child, depth + 1)
+                text(key, limit)
+                walk(child, depth + 1)
         elif type(item) is list:
             for child in item:
                 walk(child, depth + 1)
         elif type(item) is float:
             require(math.isfinite(item), "Nonfinite JSON number")
+
     walk(value, 0)
     return value
 
 
 def parse_policy(raw):
     policy = strict_json(raw)
-    fields(policy, ["schema_version", "policy_id", "version_id", "parent_version_id", "effective_from", "presentation", "clauses"], "policy")
-    require(type(policy["schema_version"]) is int and policy["schema_version"] == 1, "Unsupported policy schema version")
-    identifier(policy["policy_id"]); identifier(policy["version_id"])
+    fields(
+        policy,
+        [
+            "schema_version",
+            "policy_id",
+            "version_id",
+            "parent_version_id",
+            "effective_from",
+            "presentation",
+            "clauses",
+        ],
+        "policy",
+    )
+    require(
+        type(policy["schema_version"]) is int and policy["schema_version"] == 1,
+        "Unsupported policy schema version",
+    )
+    identifier(policy["policy_id"])
+    identifier(policy["version_id"])
     if policy["parent_version_id"] is not None:
         identifier(policy["parent_version_id"])
         require(policy["parent_version_id"] != policy["version_id"], "A policy version cannot parent itself")
@@ -123,22 +153,38 @@ def parse_policy(raw):
     clauses = policy["clauses"]
     require(type(clauses) is dict and 1 <= len(clauses) <= 1000, "Expected one to 1000 stable clauses")
     for name, clause in clauses.items():
-        require(isinstance(name, str) and 1 <= len(name) <= 80 and name.isprintable(), "Clause IDs must be bounded printable strings")
+        require(
+            isinstance(name, str) and 1 <= len(name) <= 80 and name.isprintable(),
+            "Clause IDs must be bounded printable strings",
+        )
         text(name, 80)
         require(type(clause) is dict, "Expected a typed clause")
         kind = clause.get("kind")
         if kind == "discount":
-            fields(clause, ["kind", "rate_percent", "minimum_amount", "currency", "normative_text"], "discount clause")
-            decimal_value(clause["rate_percent"], Decimal("100")); decimal_value(clause["minimum_amount"])
-            require(isinstance(clause["currency"], str) and re.fullmatch(r"[A-Z]{3}", clause["currency"]), "Use an explicit uppercase currency code")
+            fields(
+                clause,
+                ["kind", "rate_percent", "minimum_amount", "currency", "normative_text"],
+                "discount clause",
+            )
+            decimal_value(clause["rate_percent"], Decimal("100"))
+            decimal_value(clause["minimum_amount"])
+            require(
+                isinstance(clause["currency"], str) and re.fullmatch(r"[A-Z]{3}", clause["currency"]),
+                "Use an explicit uppercase currency code",
+            )
         elif kind == "shipping":
             fields(clause, ["kind", "days", "destination", "normative_text"], "shipping clause")
-            require(type(clause["days"]) is int and 0 <= clause["days"] <= 365, "Shipping days must be an integer from zero to 365")
+            require(
+                type(clause["days"]) is int and 0 <= clause["days"] <= 365,
+                "Shipping days must be an integer from zero to 365",
+            )
             require(bool(text(clause["destination"], 80)), "Shipping destination cannot be empty")
         elif kind == "manual":
             fields(clause, ["kind", "normative_text"], "manual clause")
         else:
-            raise CiteafterError("invalid_input", "Unknown clause kind; use the declared manual kind for unsupported text")
+            raise CiteafterError(
+                "invalid_input", "Unknown clause kind; use the declared manual kind for unsupported text"
+            )
         text(clause["normative_text"])
     return policy
 
@@ -148,7 +194,10 @@ def pointer(tokens):
 
 
 def tokens(path):
-    require(isinstance(path, str) and len(path) <= 1024 and (path == "" or path.startswith("/")), "Invalid JSON Pointer")
+    require(
+        isinstance(path, str) and len(path) <= 1024 and (path == "" or path.startswith("/")),
+        "Invalid JSON Pointer",
+    )
     result = []
     for token in path.split("/")[1:]:
         require(not re.search(r"~(?![01])", token), "Invalid JSON Pointer escape")
@@ -158,12 +207,14 @@ def tokens(path):
 
 def intersects(left, right):
     a, b = tokens(left), tokens(right)
-    return a[:len(b)] == b or b[:len(a)] == a
+    return a[: len(b)] == b or b[: len(a)] == a
 
 
 def lookup(value, path):
     for token in tokens(path):
-        require(type(value) is dict and token in value, "Unresolved policy pointer: " + path, "missing_dependency")
+        require(
+            type(value) is dict and token in value, "Unresolved policy pointer: " + path, "missing_dependency"
+        )
         value = value[token]
     return value
 
@@ -177,6 +228,7 @@ def semantic_value(path, value):
 
 def render_policy(policy):
     pieces, spans, offset = [], {}, 0
+
     def walk(value, trail):
         nonlocal offset
         if type(value) is dict:
@@ -190,22 +242,31 @@ def render_policy(policy):
             line = path + " = " + canonical(value) + "\n"
             data = line.encode("utf-8")
             spans[path] = {"start": offset, "end": offset + len(data), "quote": line}
-            pieces.append(data); offset += len(data)
+            pieces.append(data)
+            offset += len(data)
+
     walk(policy, [])
     body = b"".join(pieces)
     require(len(body) <= 1024 * 1024, "Rendered policy exceeds one MiB")
     for span in spans.values():
-        span["quote"] = body[span["start"]:span["end"]].decode("utf-8", "strict")
+        span["quote"] = body[span["start"] : span["end"]].decode("utf-8", "strict")
     return {"renderer": RENDERER, "sha256": digest(body), "body": body, "spans": spans}
 
 
 def source_record(raw, observed_at):
     policy = parse_policy(raw)
     rendered = render_policy(policy)
-    return {"sha256": digest(raw), "policy": policy, "version_id": policy["version_id"],
-            "policy_id": policy["policy_id"], "parent": policy["parent_version_id"],
-            "effective_from": instant(policy["effective_from"]), "observed_at": instant(observed_at),
-            "raw": raw, "rendered": rendered}
+    return {
+        "sha256": digest(raw),
+        "policy": policy,
+        "version_id": policy["version_id"],
+        "policy_id": policy["policy_id"],
+        "parent": policy["parent_version_id"],
+        "effective_from": instant(policy["effective_from"]),
+        "observed_at": instant(observed_at),
+        "raw": raw,
+        "rendered": rendered,
+    }
 
 
 def select_source(records, valid_at, known_at):
@@ -228,12 +289,22 @@ def select_source(records, valid_at, known_at):
             if parent in visited:
                 return {"status": "needs_review", "reason": "cyclic_lineage", "source": None}
             if len(by_label.get(parent, [])) != 1:
-                return {"status": "needs_review", "reason": "missing_or_conflicting_known_parent", "source": None}
+                return {
+                    "status": "needs_review",
+                    "reason": "missing_or_conflicting_known_parent",
+                    "source": None,
+                }
             visited.add(parent)
             parent = by_label[parent][0]["parent"]
         lineages[row["sha256"]] = visited
-    maximal = [row for row in eligible if not any(row["version_id"] in lineages[other["sha256"]]
-                and row["sha256"] != other["sha256"] for other in eligible)]
+    maximal = [
+        row
+        for row in eligible
+        if not any(
+            row["version_id"] in lineages[other["sha256"]] and row["sha256"] != other["sha256"]
+            for other in eligible
+        )
+    ]
     if len(maximal) != 1:
         return {"status": "needs_review", "reason": "incomparable_effective_versions", "source": None}
     return {"status": "selected", "reason": "unique_effective_lineage", "source": maximal[0]}
@@ -242,6 +313,7 @@ def select_source(records, valid_at, known_at):
 def changed_fields(before, after):
     """Parent removal is a parent path, not an unsafe string-prefix match."""
     missing, result = object(), []
+
     def walk(left, right, trail):
         if type(left) is dict and type(right) is dict:
             for name in sorted(set(left) | set(right)):
@@ -253,8 +325,16 @@ def changed_fields(before, after):
                 category = "presentation"
             elif trail[:1] == ["clauses"]:
                 category = "needs_review" if trail[-1:] in (["normative_text"], ["kind"]) else "business"
-            result.append({"path": path, "category": category, "before_present": left is not missing,
-                           "after_present": right is not missing, "before": None if left is missing else left,
-                           "after": None if right is missing else right})
+            result.append(
+                {
+                    "path": path,
+                    "category": category,
+                    "before_present": left is not missing,
+                    "after_present": right is not missing,
+                    "before": None if left is missing else left,
+                    "after": None if right is missing else right,
+                }
+            )
+
     walk(before, after, [])
     return result

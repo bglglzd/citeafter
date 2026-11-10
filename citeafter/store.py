@@ -1,4 +1,5 @@
 """Small, explicit SQLite ledger. Checksums detect accidental persisted corruption."""
+
 from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
@@ -22,7 +23,9 @@ IMMUTABLE = ("sources", "checks", "actions", "claims", "assessments", "previews"
 for table in IMMUTABLE:
     for verb in ("UPDATE", "DELETE"):
         name = f"immutable_{table}_{verb.lower()}"
-        SCHEMA[name] = f"CREATE TRIGGER {name} BEFORE {verb} ON {table} BEGIN SELECT RAISE(ABORT, 'Immutable ledger record'); END"
+        SCHEMA[name] = (
+            f"CREATE TRIGGER {name} BEFORE {verb} ON {table} BEGIN SELECT RAISE(ABORT, 'Immutable ledger record'); END"
+        )
 
 
 def pack(data):
@@ -35,19 +38,29 @@ def unpack(row):
         require(value_hash(data) == row["checksum"], "Ledger checksum mismatch", "integrity")
         return data
     except (TypeError, KeyError, UnicodeError, CiteafterError) as error:
-        raise CiteafterError("integrity", "Ledger record is invalid; retain the database for inspection") from error
+        raise CiteafterError(
+            "integrity", "Ledger record is invalid; retain the database for inspection"
+        ) from error
 
 
 def _verify(connection):
-    require(connection.execute("PRAGMA application_id").fetchone()[0] == APPLICATION_ID
-            and connection.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION,
-            "This is not a supported Citeafter database", "database_format")
-    actual = {row["name"]: row["sql"] for row in connection.execute(
-        "SELECT name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'")}
+    require(
+        connection.execute("PRAGMA application_id").fetchone()[0] == APPLICATION_ID
+        and connection.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION,
+        "This is not a supported Citeafter database",
+        "database_format",
+    )
+    actual = {
+        row["name"]: row["sql"]
+        for row in connection.execute("SELECT name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'")
+    }
     require(actual == SCHEMA, "Database schema differs from this version", "integrity")
-    require(connection.execute("PRAGMA quick_check").fetchone()[0] == "ok"
-            and connection.execute("PRAGMA foreign_key_check").fetchone() is None,
-            "Database integrity check failed", "integrity")
+    require(
+        connection.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        and connection.execute("PRAGMA foreign_key_check").fetchone() is None,
+        "Database integrity check failed",
+        "integrity",
+    )
 
 
 class Store:
@@ -92,7 +105,10 @@ class Store:
         except sqlite3.Error as error:
             if connection:
                 connection.rollback()
-            raise CiteafterError("database", "Database operation failed; retain the database and retry after other writers finish") from error
+            raise CiteafterError(
+                "database",
+                "Database operation failed; retain the database and retry after other writers finish",
+            ) from error
         except BaseException:
             if connection:
                 connection.rollback()
@@ -109,8 +125,11 @@ def setting(connection, key):
 
 
 def set_setting(connection, key, value):
-    require(connection.execute("UPDATE meta SET value=? WHERE key=?", (str(value), key)).rowcount == 1,
-            "Missing database configuration", "integrity")
+    require(
+        connection.execute("UPDATE meta SET value=? WHERE key=?", (str(value), key)).rowcount == 1,
+        "Missing database configuration",
+        "integrity",
+    )
 
 
 def checked_blob(raw, expected):

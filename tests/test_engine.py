@@ -28,6 +28,7 @@ def database(path):
 class Clock:
     def __init__(self, now="2030-01-03T09:00:00Z"):
         self.now = now
+
     def __call__(self):
         return self.now
 
@@ -49,8 +50,13 @@ class LedgerTests(unittest.TestCase):
 
     def action(self, action_id="draft", **changes):
         self.clock.now = "2030-01-04T12:00:00Z"
-        settings = dict(label="Tuesday discount", business_at="2030-01-08T12:00:00Z", recipe="discount_quote",
-                        clause="standard", inputs={"amount": "2000.00", "currency": "USD"})
+        settings = dict(
+            label="Tuesday discount",
+            business_at="2030-01-08T12:00:00Z",
+            recipe="discount_quote",
+            clause="standard",
+            inputs={"amount": "2000.00", "currency": "USD"},
+        )
         settings.update(changes)
         self.engine.ingest(self.raw("v1"))
         return self.engine.create_action(action_id, **settings)
@@ -82,7 +88,8 @@ class LedgerTests(unittest.TestCase):
 
     def test_cosmetic_update_preserves_stale_old_claim_and_equivalence_keeps_original_citations(self):
         self.action()
-        self.advance(); self.advance("v3")
+        self.advance()
+        self.advance("v3")
         self.assertEqual(self.engine.state()["actions"][0]["assessment"]["gate"], "stale")
         self.engine.recheck("draft")
         self.assertEqual(self.engine.state()["actions"][0]["claim"]["result"]["source_version"], "v3")
@@ -90,25 +97,35 @@ class LedgerTests(unittest.TestCase):
     def test_unrelated_shipping_needs_new_preview_without_recipe_execution(self):
         self.action(recipe="shipping_days", clause="shipping", inputs={"destination": "domestic"})
         old = self.engine.preview("draft")
-        with patch("citeafter.engine.evaluate_recipe", side_effect=AssertionError("Unexpected recipe execution")):
+        with patch(
+            "citeafter.engine.evaluate_recipe", side_effect=AssertionError("Unexpected recipe execution")
+        ):
             self.advance()
             state = self.engine.state()["actions"][0]
             self.assertEqual(state["assessment"]["gate"], "allowed")
             self.assertEqual(state["claim"]["result"]["citations"][0]["source_version"], "v1")
-            with self.assertRaises(CiteafterError): self.engine.release(old["preview_id"])
+            with self.assertRaises(CiteafterError):
+                self.engine.release(old["preview_id"])
             new = self.engine.preview("draft")
             self.assertEqual(new["payload"]["citation_source_version"], "v1")
             self.assertEqual(new["source_version"], "v2")
             self.engine.release(new["preview_id"])
 
     def test_manual_and_normative_text_remain_review_not_successful_rechecks(self):
-        self.action(recipe="manual_claim", clause="manual_note", inputs={"text": "Review"}, declared_paths=["/clauses/shipping/days"])
+        self.action(
+            recipe="manual_claim",
+            clause="manual_note",
+            inputs={"text": "Review"},
+            declared_paths=["/clauses/shipping/days"],
+        )
         self.advance()
         action = self.engine.state()["actions"][0]
         self.assertEqual(action["assessment"]["impact_class"], "needs_review")
         self.assertEqual(action["assessment"]["gate"], "needs_review")
-        with self.assertRaises(CiteafterError): self.engine.recheck("draft")
-        with self.assertRaises(CiteafterError): self.engine.preview("draft")
+        with self.assertRaises(CiteafterError):
+            self.engine.recheck("draft")
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
 
     def test_reopen_failure_expiry_and_original_receipt_replay_do_not_rewrite_history(self):
         self.action(business_at="2030-01-04T12:00:00Z")
@@ -128,16 +145,21 @@ class LedgerTests(unittest.TestCase):
         preview = self.engine.preview("draft")
         self.clock.now = "2030-01-04T12:01:01Z"
         self.assertEqual(self.engine.state()["health"]["status"], "expired")
-        with self.assertRaises(CiteafterError): self.engine.release(preview["preview_id"])
-        with self.assertRaises(CiteafterError): self.engine.preview("draft")
+        with self.assertRaises(CiteafterError):
+            self.engine.release(preview["preview_id"])
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
         self.engine.ingest(self.raw("v1"))
         self.assertEqual(self.engine.state()["sources"][0]["observed_at"], "2030-01-03T09:00:00.000000Z")
         self.engine.release(self.engine.preview("draft")["preview_id"])
 
     def test_history_query_never_changes_action_or_operational_authority(self):
-        self.action(); self.advance()
+        self.action()
+        self.advance()
         before = self.path.read_bytes()
-        historical = self.engine.as_of("draft", valid_at="2030-01-08T12:00:00Z", known_at="2030-01-04T14:59:59Z")
+        historical = self.engine.as_of(
+            "draft", valid_at="2030-01-08T12:00:00Z", known_at="2030-01-04T14:59:59Z"
+        )
         self.assertEqual(historical["selected_source_version"], "v1")
         self.assertEqual(historical["output"]["net_amount"], "1800.00")
         self.assertTrue(historical["read_only"])
@@ -146,42 +168,58 @@ class LedgerTests(unittest.TestCase):
 
     def test_conflicting_version_and_fork_fail_closed_not_last_arrival_wins(self):
         self.action()
-        conflict = json.loads(self.raw("v1")); conflict["clauses"]["standard"]["rate_percent"] = "99.00"
+        conflict = json.loads(self.raw("v1"))
+        conflict["clauses"]["standard"]["rate_percent"] = "99.00"
         self.assertTrue(self.engine.ingest(json.dumps(conflict).encode())["accepted"])
         state = self.engine.state()
         self.assertEqual(len(state["sources"]), 2)
         self.assertEqual(state["actions"][0]["assessment"]["impact_class"], "needs_review")
-        with self.assertRaises(CiteafterError): self.engine.preview("draft")
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
 
     def test_unrelated_database_is_preserved_and_corruption_fails_closed(self):
         unrelated = self.path.parent / "other.db"
-        with database(unrelated) as connection: connection.execute("CREATE TABLE useful(x)")
+        with database(unrelated) as connection:
+            connection.execute("CREATE TABLE useful(x)")
         before = unrelated.read_bytes()
-        with self.assertRaises(CiteafterError): Engine(unrelated).state()
+        with self.assertRaises(CiteafterError):
+            Engine(unrelated).state()
         self.assertEqual(unrelated.read_bytes(), before)
         self.action()
         with database(self.path) as connection:
             connection.execute("DROP TRIGGER immutable_claims_update")
             connection.execute("UPDATE claims SET data='{}'")
         before = self.path.read_bytes()
-        with self.assertRaises(CiteafterError): self.engine.preview("draft")
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
         self.assertEqual(self.path.read_bytes(), before)
 
     def test_ledger_mutation_is_refused_and_clock_rollback_cannot_authorize(self):
         self.action()
         with database(self.path) as connection:
-            with self.assertRaises(sqlite3.IntegrityError): connection.execute("DELETE FROM sources")
+            with self.assertRaises(sqlite3.IntegrityError):
+                connection.execute("DELETE FROM sources")
         self.clock.now = "2029-01-01T00:00:00Z"
-        with self.assertRaises(CiteafterError): self.engine.preview("draft")
-        self.assertIsNotNone(self.engine.as_of("draft", valid_at="2030-01-08T12:00:00Z", known_at="2030-01-04T12:00:00Z"))
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
+        self.assertIsNotNone(
+            self.engine.as_of("draft", valid_at="2030-01-08T12:00:00Z", known_at="2030-01-04T12:00:00Z")
+        )
 
     def test_two_actual_processes_racing_same_release_produce_one_outbox(self):
         self.action()
         preview = self.engine.preview("draft")
         code = "import json,sys;from citeafter.engine import Engine;e=Engine(sys.argv[1],clock=lambda:'2030-01-04T12:00:00Z');print(json.dumps(e.release(sys.argv[2])))"
-        children = [subprocess.Popen([sys.executable, "-c", code, str(self.path), preview["preview_id"]], cwd=ROOT,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                    creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0) for _ in range(2)]
+        children = [
+            subprocess.Popen(
+                [sys.executable, "-c", code, str(self.path), preview["preview_id"]],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            )
+            for _ in range(2)
+        ]
         try:
             outputs = [child.communicate(timeout=20) for child in children]
             self.assertEqual([child.returncode for child in children], [0, 0], outputs)
@@ -191,7 +229,9 @@ class LedgerTests(unittest.TestCase):
                 self.assertEqual(connection.execute("SELECT count(*) FROM outbox").fetchone()[0], 1)
         finally:
             for child in children:
-                if child.poll() is None: child.kill(); child.communicate()
+                if child.poll() is None:
+                    child.kill()
+                    child.communicate()
 
 
 if __name__ == "__main__":

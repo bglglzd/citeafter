@@ -64,9 +64,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.close_connection = True
         with self.server.lock:
-            self.server.calls.append(
-                {"path": self.path, "headers": dict(self.headers.items())}
-            )
+            self.server.calls.append({"path": self.path, "headers": dict(self.headers.items())})
         try:
             self.route()
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
@@ -104,13 +102,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/redirect":
             return self.reply(302, headers=[("Location", "/target")])
         if path == "/not-found":
-            return self.reply(
-                404, body=b'{"detail":"synthetic-private-publisher-detail"}'
-            )
+            return self.reply(404, body=b'{"detail":"synthetic-private-publisher-detail"}')
         if path == "/truncated":
-            return self.reply(
-                length=False, headers=[("Content-Length", str(len(FIRST) + 10))]
-            )
+            return self.reply(length=False, headers=[("Content-Length", str(len(FIRST) + 10))])
         if path == "/duplicate-length":
             return self.reply(headers=[("Content-Length", str(len(FIRST)))])
         if path == "/close-delimited":
@@ -120,11 +114,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Transfer-Encoding", "chunked")
             self.end_headers()
-            malformed = (
-                b"2\r\n{}XX0\r\n\r\n"
-                if path == "/bad-chunk-delimiter"
-                else b"2\r\n{}\r\n0\r\n"
-            )
+            malformed = b"2\r\n{}XX0\r\n\r\n" if path == "/bad-chunk-delimiter" else b"2\r\n{}\r\n0\r\n"
             self.wfile.write(malformed)
             return
         if path in ("/chunked", "/incomplete-chunk", "/mixed-framing", "/large-chunk"):
@@ -137,11 +127,7 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/incomplete-chunk":
                 self.wfile.write(b'100\r\n{"synthetic":1}\r\n')
                 return
-            body = (
-                FIRST
-                if path != "/large-chunk"
-                else b'{"synthetic":"' + b"x" * 1024 + b'"}'
-            )
+            body = FIRST if path != "/large-chunk" else b'{"synthetic":"' + b"x" * 1024 + b'"}'
             for offset in range(0, len(body), 7):
                 chunk = body[offset : offset + 7]
                 self.wfile.write(f"{len(chunk):x}\r\n".encode() + chunk + b"\r\n")
@@ -179,16 +165,12 @@ def publisher(context=None):
     server = Publisher()
     if context:
         server.socket = context.wrap_socket(server.socket, server_side=True)
-    thread = threading.Thread(
-        target=server.serve_forever, kwargs={"poll_interval": 0.02}
-    )
+    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.02})
     thread.start()
     try:
         yield (
             server,
-            ("https" if context else "http")
-            + "://127.0.0.1:"
-            + str(server.server_port),
+            ("https" if context else "http") + "://127.0.0.1:" + str(server.server_port),
         )
     finally:
         server.stop_event.set()
@@ -211,9 +193,7 @@ class HTTPSourceTests(unittest.TestCase):
     def test_actual_conditional_cycle_preserves_received_bytes_and_frozen_result(self):
         with publisher() as (server, origin):
             first = source.fetch_policy(origin + "/publisher")
-            self.assertEqual(
-                (first.status, first.body, first.etag), (200, FIRST, '"synthetic-v1"')
-            )
+            self.assertEqual((first.status, first.body, first.etag), (200, FIRST, '"synthetic-v1"'))
             self.assertEqual(first.response_sha256, hashlib.sha256(FIRST).hexdigest())
             self.assertGreater(first.elapsed_ms, 0)
             self.assertEqual(
@@ -231,9 +211,7 @@ class HTTPSourceTests(unittest.TestCase):
             server.etag = '"synthetic-v2"'
             changed = source.fetch_policy(origin + "/publisher", etag=first.etag)
             self.assertEqual(changed.body, SECOND)
-            self.assertEqual(
-                changed.response_sha256, hashlib.sha256(SECOND).hexdigest()
-            )
+            self.assertEqual(changed.response_sha256, hashlib.sha256(SECOND).hexdigest())
             self.assertEqual(len(server.calls), 3)
             self.assertEqual(server.calls[1]["headers"]["If-None-Match"], first.etag)
 
@@ -276,9 +254,7 @@ class HTTPSourceTests(unittest.TestCase):
                         source.fetch_policy(origin + route)
                     self.assertEqual(failure.exception.code, code)
                     self.assertEqual(len(server.calls), before + 1)
-                    self.assertNotIn(
-                        "synthetic-private-publisher-detail", str(failure.exception)
-                    )
+                    self.assertNotIn("synthetic-private-publisher-detail", str(failure.exception))
                     self.assertNotIn(origin, str(failure.exception))
                     self.assertFalse(hasattr(failure.exception, "body"))
 
@@ -324,9 +300,7 @@ class HTTPSourceTests(unittest.TestCase):
         with publisher() as (server, origin):
             with self.assertRaises(source.TypedFetchError) as failure:
                 source.fetch_policy(origin + "/redirect")
-            self.assertEqual(
-                (failure.exception.code, failure.exception.status), ("redirect", 302)
-            )
+            self.assertEqual((failure.exception.code, failure.exception.status), ("redirect", 302))
             self.assertEqual([c["path"] for c in server.calls], ["/redirect"])
 
     def test_proxy_credentials_and_python_environment_not_inherited(self):
@@ -361,9 +335,7 @@ class HTTPSourceTests(unittest.TestCase):
             self.assertEqual(trap.calls, [])
             self.assertEqual(len(server.calls), 1)
             headers = {k.lower() for k in server.calls[0]["headers"]}
-            self.assertFalse(
-                headers & {"authorization", "proxy-authorization", "cookie"}
-            )
+            self.assertFalse(headers & {"authorization", "proxy-authorization", "cookie"})
         self.assertEqual(len(children), 1)
         self.assertIsNotNone(children[0].poll())
 
@@ -444,15 +416,10 @@ class HTTPSourceTests(unittest.TestCase):
     def test_self_signed_https_is_refused_without_verification_bypass(self):
         openssl = shutil.which("openssl")
         if not openssl and os.name == "nt":
-            candidate = (
-                Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
-                / "Git/usr/bin/openssl.exe"
-            )
+            candidate = Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Git/usr/bin/openssl.exe"
             openssl = str(candidate) if candidate.is_file() else None
         if not openssl:
-            self.skipTest(
-                "OpenSSL executable unavailable for the synthetic self-signed TLS fixture"
-            )
+            self.skipTest("OpenSSL executable unavailable for the synthetic self-signed TLS fixture")
         with tempfile.TemporaryDirectory(prefix="citeafter-http-tls-") as owned:
             directory = Path(owned).resolve()
             self.assertEqual(directory.parent, Path(tempfile.gettempdir()).resolve())
