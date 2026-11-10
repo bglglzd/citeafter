@@ -1,0 +1,7 @@
+* text=auto eol=lf
+# Keep source representations, annotated fixtures and measured reports byte-exact.
+*.json -text
+*.png -text
+*.whl -text
+*.gz -text
+*.zip -text
