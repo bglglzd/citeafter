@@ -128,6 +128,7 @@ mark { color: #224f55; background: #ccebe3; padding: 1px 0; border-radius: 2px; 
 .path-list li { border: 1px solid #e1e9ed; border-radius: 7px; background: #f8fafc; padding: 10px 12px; font-size: 11px; color: #526d7a; line-height: 1.65; overflow-wrap: anywhere; }
 .path-list code { display: block; color: #275866; margin-bottom: 4px; font-size: 11px; }
 .citation-list { display: grid; gap: 11px; }
+.citation-disclosure > summary { color: #304e5c; font-size: 13px; font-weight: 600; line-height: 1.6; }
 .citation { border: 1px solid #dae5e9; border-radius: 9px; padding: 13px 14px; background: #fbfdfe; }
 .citation-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: #5c7b89; }
 .citation blockquote { margin: 10px 0 12px; padding: 1px 0 1px 12px; border-left: 2px solid #a9cbd3; color: #345663; }

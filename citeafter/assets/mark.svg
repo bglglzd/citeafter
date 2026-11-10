@@ -3,7 +3,7 @@
   <defs>
     <linearGradient id="back" x1="10" y1="8" x2="44" y2="51" gradientUnits="userSpaceOnUse"><stop stop-color="#eff9fc"/><stop offset="1" stop-color="#c8e0e8"/></linearGradient>
     <linearGradient id="front" x1="23" y1="17" x2="53" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".98"/><stop offset="1" stop-color="#e8f4f5" stop-opacity=".9"/></linearGradient>
-    <filter id="shadow" x="4" y="5" width="57" height="59" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#183e4a" flood-opacity=".12"/></filter>
+    <filter id="shadow" filterUnits="userSpaceOnUse" x="4" y="5" width="57" height="59" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#183e4a" flood-opacity=".12"/></filter>
   </defs>
   <g filter="url(#shadow)">
     <rect x="10.5" y="8.5" width="34" height="42" rx="9" fill="url(#back)" stroke="#adcbd6"/>

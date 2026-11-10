@@ -17,6 +17,51 @@ const HEALTH = {
   error: ["Fetch failed", "bad"],
   empty: ["No source", "neutral"],
 };
+const REASONS = {
+  explicit_import: "Policy imported locally.",
+  http_200: "Policy received from the pinned source.",
+  http_304: "The pinned source confirmed the cached policy is unchanged.",
+  no_successful_source_check: "Fetch or import a policy before continuing.",
+  source_check_expired: "The source check expired. Fetch the source again.",
+  required_business_value_changed: "A required policy field changed. Recheck this decision.",
+  changed_required_business_value: "A required policy field changed.",
+  supported_current_values: "Current policy values support this saved result.",
+  support_requires_review: "Source support needs manual review before release.",
+  original_outbox_receipt_retained: "The original outbox receipt is retained.",
+  selected_version_not_covered_by_latest_check: "The latest source check does not cover the selected version.",
+  manual_dependency_coverage_unproven: "Manual pointers do not prove complete dependency coverage.",
+  dependency_coverage_unproven: "Complete dependency coverage has not been established.",
+  missing_dependency: "A required policy field is missing.",
+  unsupported_clause_kind: "This recipe does not support the selected clause kind.",
+  nonempty_normative_text_requires_review: "The clause contains additional text that requires manual review.",
+  unsupported_input_currency: "The input currency does not match the policy clause.",
+  unsupported_input_destination: "The input destination does not match the policy clause.",
+  mixed_policy_families: "The recorded sources belong to different policy families.",
+  no_effective_known_source: "No known source applies at the selected business time.",
+  conflicting_version_identity: "Different source bytes use the same version label.",
+  cyclic_lineage: "The policy version history contains a cycle.",
+  missing_or_conflicting_known_parent: "A parent policy version is missing or ambiguous.",
+  incomparable_effective_versions: "More than one policy branch applies at the selected time.",
+  unique_effective_lineage: "One recorded policy lineage applies at the selected time.",
+  conditional_cache_changed: "The conditional cache changed during the request. Fetch the source again.",
+  import_byte_limit_prefix_only: "The import exceeded 256 KiB. Only its bounded rejected prefix was retained.",
+  wrong_policy: "The source belongs to a different policy family.",
+  invalid_url: "The source URL is outside the supported pinned endpoint profile.",
+  configuration: "The source fetch limits are invalid.",
+  etag: "The source validator is invalid or does not match the conditional request.",
+  redirect: "The source returned a redirect. Redirects are not followed.",
+  http_status: "The source did not return a supported successful status.",
+  content_type: "The source must provide UTF-8 JSON content.",
+  content_encoding: "The source used an unsupported content encoding.",
+  framing: "The source response was incomplete or used unsupported framing.",
+  too_large: "The source exceeded the configured byte limit.",
+  utf8: "The source response is not valid UTF-8.",
+  json: "The source response is not a supported JSON document.",
+  timeout: "The source fetch timed out.",
+  tls: "The source TLS check failed.",
+  network: "The source connection could not complete.",
+  worker: "The isolated source fetch could not complete.",
+};
 const model = {
   state: null, recorded: null, connected: false, busy: false,
   actionId: null, sourceSha: null, highlight: null, preview: null,
@@ -25,6 +70,7 @@ const isObject = (value) => value !== null && typeof value === "object" && !Arra
 const list = (value) => Array.isArray(value) ? value : [];
 const text = (value) => value === null || value === undefined ? "—" : String(value);
 const title = (value) => text(value).replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
+const reasonText = (code) => Object.hasOwn(REASONS, code) ? REASONS[code] : "Inspect the assessment details before continuing.";
 
 function element(tag, attributes = {}, ...children) {
   const node = document.createElement(tag);
@@ -139,6 +185,12 @@ function canRecheck(action) {
     && action.assessment.impact_class === "affected" && action.claim.result.result_status === "supported");
 }
 
+function initialAction(actions) {
+  const pending = actions.filter((action) => !action.receipt && action.assessment.gate !== "released");
+  return pending.find(canRecheck) ?? pending.find((action) => action.assessment.gate === "allowed")
+    ?? pending.find((action) => action.assessment.gate === "needs_review") ?? pending[0] ?? actions[0] ?? null;
+}
+
 async function requestJSON(path, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
@@ -181,7 +233,7 @@ function validateState(state, recorded = false) {
 function applyState(state) {
   model.state = validateState(state, Boolean(model.recorded));
   model.connected = !model.recorded;
-  if (!currentAction()) model.actionId = state.actions[0]?.id ?? null;
+  if (!currentAction()) model.actionId = initialAction(state.actions)?.id ?? null;
   const action = currentAction();
   if (!state.sources.some((source) => source.sha256 === model.sourceSha)) model.sourceSha = action?.claim.result.source_sha256 ?? state.sources[0]?.sha256 ?? null;
   model.highlight = null;
@@ -231,7 +283,7 @@ function renderHealth() {
   const [label, tone] = HEALTH[state.health.status];
   $("health-badge").className = "badge " + tone;
   $("health-badge").textContent = label + (model.recorded ? " · recorded" : "");
-  $("health-reason").textContent = state.health.reason || "";
+  $("health-reason").textContent = state.health.reason ? reasonText(state.health.reason) : "";
   $("health-checked").replaceChildren(timeNode(state.health.checked_at));
   const seconds = (value) => Number.isFinite(value) ? `${Math.round(value)} s` : "—";
   $("health-age").textContent = `${seconds(state.health.age_seconds)} / ${seconds(state.health.ttl_seconds)}`;
@@ -338,6 +390,15 @@ function citationList(citations) {
   )));
 }
 
+function originalCitations(citations) {
+  const items = list(citations);
+  const versions = [...new Set(items.map((citation) => citation.source_version))];
+  const fields = new Set(items.map((citation) => citation.pointer)).size;
+  const label = ["Original citations", versions.join(", "), `${fields} ${fields === 1 ? "field" : "fields"}`].filter(Boolean).join(" · ");
+  return element("details", { class: "detail-section citation-disclosure" },
+    element("summary", { text: label }), citationList(items));
+}
+
 function receiptView(receipt) {
   return element("section", { class: "receipt-block" }, element("h3", { text: "Local outbox receipt" }),
     element("dl", { class: "value-grid" }, fact("Receipt", receipt.id), fact("Released at", timeNode(receipt.released_at)), fact("Action revision", receipt.action_revision), fact("Supported source", receipt.source_version)),
@@ -360,7 +421,7 @@ function renderDetail() {
   $("detail-revision").textContent = `Revision ${action.revision}`;
   const gate = element("div", { class: "gate-card", "data-gate": assessment.gate },
     element("div", { class: "gate-heading" }, badge(GATES[assessment.gate])),
-    element("p", { class: "gate-reason", text: assessment.gate_reason || "Inspect the current assessment before continuing." }),
+    element("p", { class: "gate-reason", text: reasonText(assessment.gate_reason) }),
   );
   if (assessment.gate !== "released") gate.append(element("div", { class: "action-controls" },
     button("Recheck decision", () => task("Rechecking decision…", () => mutate("/api/recheck", { action_id: action.id }, "Decision rechecked. A new revision is shown.")), { id: "recheck-action" }),
@@ -372,9 +433,9 @@ function renderDetail() {
   if (result.result_status !== "supported") output.append(element("p", { class: "quiet", text: "This saved result requires review." }));
   const support = section("Source support");
   if (list(assessment.reason_paths).length) support.append(element("ul", { class: "path-list" }, assessment.reason_paths.map((path) => element("li", {}, element("code", { text: path }), element("span", { text: `Claim ${action.claim.id} → decision ${action.id}` })))));
-  if (list(assessment.reason_codes).length) support.append(element("ul", { class: "reason-list" }, assessment.reason_codes.map((reason) => element("li", { text: title(reason) }))));
-  support.append(rawDetails("Assessment details", assessment), element("details", { class: "raw-details" }, element("summary", { text: "Recorded field reads" }), valueGrid(result.read_values)));
-  $("detail-content").replaceChildren(meta, gate, output, support, section("Original citations", citationList(result.citations)));
+  if (list(assessment.reason_codes).length) support.append(element("ul", { class: "reason-list" }, assessment.reason_codes.map((reason) => element("li", { text: reasonText(reason) }))));
+  support.append(rawDetails("Assessment details", { assessment, source_health: model.state.health }), element("details", { class: "raw-details" }, element("summary", { text: "Recorded field reads" }), valueGrid(result.read_values)));
+  $("detail-content").replaceChildren(meta, gate, output, support, originalCitations(result.citations));
   if (action.receipt) $("detail-content").append(section("Release record", receiptView(action.receipt)));
 }
 
@@ -397,7 +458,7 @@ function renderHistory(result) {
   const body = element("div", {}, element("dl", { class: "value-grid" }, fact("Business time", timeNode(result.valid_at)), fact("Known at", timeNode(result.known_at)), fact("Selected source", result.selected_source_version ?? "None eligible"), fact("Result", title(result.result_status))));
   if (result.decision_exists_at_known_at === false) body.append(element("p", { class: "section-note", text: "This decision had not been recorded at that knowledge cutoff." }));
   body.append(element("h3", { text: "Historical result" }), valueGrid(result.output));
-  if (list(result.reason_codes).length) body.append(element("ul", { class: "reason-list" }, result.reason_codes.map((code) => element("li", { text: title(code) }))));
+  if (list(result.reason_codes).length) body.append(element("ul", { class: "reason-list" }, result.reason_codes.map((code) => element("li", { text: reasonText(code) }))));
   body.append(element("h3", { text: "Historical citations" }), citationList(result.citations));
   if (result.receipt) body.append(section("Original release", receiptView(result.receipt)));
   $("history-result").replaceChildren(body);
