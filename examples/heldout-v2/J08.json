@@ -1,0 +1,352 @@
+{
+  "schema_version": 1,
+  "id": "J08",
+  "title": "Manual quote with no declared evidence remains blocked despite empty normative text",
+  "authoring": {
+    "provenance": "independent fresh-context agent-authored synthetic held-out gold under dependency contract revision 2",
+    "customer_data": false,
+    "human_study": false,
+    "holdout": true,
+    "implementation_or_model_output_used": false
+  },
+  "recipe": "manual_claim",
+  "clause": "standard",
+  "inputs": {
+    "text": "Operator-authored quote assertion with no evidence declarations."
+  },
+  "business_at": "2030-01-09T03:20:00+03:00",
+  "created_known_at": "2030-01-04T15:14:08+03:00",
+  "dependency_coverage": {
+    "proven": false,
+    "required_paths": null,
+    "declared_paths": [],
+    "manual_coverage_may_be_inferred_from_edges": false
+  },
+  "initial_expected": {
+    "selected_source_version": "v1",
+    "result_status": "needs_review",
+    "output": null,
+    "read_values": {
+      "/clauses/standard/kind": "discount",
+      "/clauses/standard/normative_text": ""
+    },
+    "citation_source_version": "v1",
+    "gate": {
+      "support_gate": "blocked_needs_review",
+      "old_generation_preview": "not_applicable_no_earlier_preview",
+      "fresh_preview_requires_final_recheck": true,
+      "source_health": "fresh_by_explicit_fixture_assumption",
+      "operational_known_at": "trusted_stage_clock_not_history_selector",
+      "pinned_business_at_unchanged": true
+    }
+  },
+  "after_v2": {
+    "known_at": "2030-01-04T15:00:00Z",
+    "selected_source_version": "v2",
+    "saved_support_version_before_recheck": "v1",
+    "impact_class": "needs_review",
+    "reason_paths": [
+      "/clauses/standard/normative_text"
+    ],
+    "reason_codes": [
+      "manual_dependency_coverage_unproven"
+    ],
+    "result_status": "needs_review",
+    "independently_reevaluated_output": null,
+    "gate_before_recheck": {
+      "support_gate": "blocked_needs_review",
+      "old_generation_preview": "not_applicable_no_supported_preview",
+      "fresh_preview_requires_final_recheck": true,
+      "source_health": "fresh_by_explicit_fixture_assumption",
+      "operational_known_at": "trusted_stage_clock_not_history_selector",
+      "pinned_business_at_unchanged": true
+    },
+    "recheck": {
+      "eligible": false,
+      "recipe_execution_expected": false,
+      "new_claim_and_action_revision": false,
+      "support_source_version_after_handling": "v1",
+      "citation_source_version_after_handling": "v1",
+      "gate_after_handling": {
+        "support_gate": "blocked_needs_review",
+        "old_generation_preview": "not_applicable_no_supported_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      }
+    },
+    "binary_affected_metric_eligible": false,
+    "changed_primary_clause_paths": [
+      "/clauses/standard/rate_percent"
+    ],
+    "changed_required_paths": [],
+    "declared_paths_changed": []
+  },
+  "after_v3": {
+    "without_v2_recheck": {
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "basis_source_version": "v1",
+      "v2_recheck_performed": false,
+      "impact_class": "needs_review",
+      "reason_paths": [
+        "/clauses/standard/normative_text"
+      ],
+      "reason_codes": [
+        "manual_dependency_coverage_unproven"
+      ],
+      "result_status": "needs_review",
+      "independently_reevaluated_output": null,
+      "gate_before_recheck": {
+        "support_gate": "blocked_needs_review",
+        "old_generation_preview": "not_applicable_no_supported_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "recheck_eligible": false,
+      "recipe_execution_expected": false,
+      "new_support_version_if_rechecked": null,
+      "citation_source_version_without_recheck": "v1",
+      "semantic_equivalence_assessment_only": false,
+      "may_move_old_citation_to_new_bytes": false,
+      "outbox_count_before_optional_release": 0,
+      "gate_after_handling": {
+        "support_gate": "blocked_needs_review",
+        "old_generation_preview": "not_applicable_no_supported_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "support_source_version_after_handling": "v1",
+      "citation_source_version_after_handling": "v1",
+      "changed_primary_clause_paths": [
+        "/clauses/standard/rate_percent"
+      ],
+      "changed_required_paths": [],
+      "declared_paths_changed": []
+    },
+    "after_v2_handling": {
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "basis_source_version": "v1",
+      "v2_recheck_performed": false,
+      "impact_class": "needs_review",
+      "reason_paths": [
+        "/clauses/standard/normative_text"
+      ],
+      "reason_codes": [
+        "manual_dependency_coverage_unproven"
+      ],
+      "result_status": "needs_review",
+      "independently_reevaluated_output": null,
+      "gate_before_recheck": {
+        "support_gate": "blocked_needs_review",
+        "old_generation_preview": "not_applicable_no_supported_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "recheck_eligible": false,
+      "recipe_execution_expected": false,
+      "new_support_version_if_rechecked": null,
+      "citation_source_version_without_recheck": "v1",
+      "semantic_equivalence_assessment_only": false,
+      "may_move_old_citation_to_new_bytes": false,
+      "outbox_count_before_optional_release": 0,
+      "gate_after_handling": {
+        "support_gate": "blocked_needs_review",
+        "old_generation_preview": "not_applicable_no_supported_preview",
+        "fresh_preview_requires_final_recheck": true,
+        "source_health": "fresh_by_explicit_fixture_assumption",
+        "operational_known_at": "trusted_stage_clock_not_history_selector",
+        "pinned_business_at_unchanged": true
+      },
+      "support_source_version_after_handling": "v1",
+      "citation_source_version_after_handling": "v1",
+      "changed_primary_clause_paths": [
+        "/clauses/standard/rate_percent"
+      ],
+      "changed_required_paths": [],
+      "declared_paths_changed": []
+    }
+  },
+  "historical_queries": [
+    {
+      "id": "before_first_observation_offset",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-03T14:29:59.999999+05:30",
+      "selected_source_version": null,
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [
+        "source_not_yet_known"
+      ],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": false
+    },
+    {
+      "id": "exact_first_observation_offset",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-03T04:00:00-05:00",
+      "selected_source_version": "v1",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": false
+    },
+    {
+      "id": "before_second_observation_microsecond",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-04T16:59:59.999999+02:00",
+      "selected_source_version": "v1",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "exact_second_observation_offset",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-04T10:00:00-05:00",
+      "selected_source_version": "v2",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "after_second_observation_microsecond",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-05T05:00:00.000001+14:00",
+      "selected_source_version": "v2",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "before_third_observation_microsecond",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-08T14:29:59.999999+05:30",
+      "selected_source_version": "v2",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "exact_third_observation_offset",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-08T18:00:00+09:00",
+      "selected_source_version": "v3",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "after_third_observation_microsecond",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-09T03:20:00+03:00",
+      "known_at": "2030-01-08T01:00:00.000001-08:00",
+      "selected_source_version": "v3",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "valid_before_second_effective_microsecond",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-07T13:59:59.999999+14:00",
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v1",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "valid_exact_second_effective_second_known",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-06T19:00:00-05:00",
+      "known_at": "2030-01-04T15:00:00Z",
+      "selected_source_version": "v2",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "valid_exact_second_effective_third_known",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-07T05:30:00+05:30",
+      "known_at": "2030-01-08T09:00:00Z",
+      "selected_source_version": "v3",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    },
+    {
+      "id": "valid_after_second_effective_before_second_known",
+      "query_kind": "read_only_policy_recipe_query",
+      "valid_at": "2030-01-07T00:00:00.000001+00:00",
+      "known_at": "2030-01-04T14:59:59.999999Z",
+      "selected_source_version": "v1",
+      "result_status": "needs_review",
+      "output": null,
+      "reason_codes": [],
+      "query_has_release_authority": false,
+      "action_business_at_remains": "2030-01-09T03:20:00+03:00",
+      "decision_exists_at_known_at": true
+    }
+  ],
+  "action_state": {
+    "initial": "pending",
+    "initial_release": null,
+    "after_v2_handling_plan": "remain_pending",
+    "v2_release": null,
+    "after_v3_replay": {
+      "operation": "not_released_without_explicit_operator_action",
+      "receipt_ref": null,
+      "original_support_source_version": null,
+      "outbox_count_in_handled_branch": 0,
+      "history_may_rewrite_released_payload": false
+    },
+    "branch_note": "without_v2_recheck and after_v2_handling are mutually exclusive fixture branches, not extra decisions"
+  }
+}

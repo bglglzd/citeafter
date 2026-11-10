@@ -20,13 +20,15 @@ A source is eligible when `observed_at <= known_at` and `effective_from <= valid
 
 `policy.py` validates one closed full-snapshot format and renders sorted pointer/value lines. Citations bind the original JSON SHA256, renderer ID, rendered SHA256 and exact UTF-8 byte range. They quote the labelled rendering, not an arbitrary PDF or the original JSON's formatting. Decoded JSON Pointer tokens prevent `/clause/a` from accidentally matching `/clause/ab`.
 
-`recipes.py` records every policy read for the supported discount/shipping recipes, including kind and normative wording. Dependency inspection performs no discount arithmetic. Decimal inputs use up to two places; eligibility includes the minimum, the discount rounds once with `ROUND_HALF_UP`, and net amount subtracts that rounded value. Different currency/destination and nonempty normative text require review. Manual declared edges never prove coverage.
+`recipes.py` records every policy read for the supported discount/shipping recipes, including kind and normative wording. Manual claims also record their own clause's kind and wording; a declared ancestor already covers its children. These reads provide citations and changed-field reverse edges while manual coverage remains unproven. Dependency inspection performs no discount arithmetic. Decimal inputs use up to two places; eligibility includes the minimum, the discount rounds once with `ROUND_HALF_UP`, and net amount subtracts that rounded value. Different currency/destination and nonempty normative text require review.
 
 Assessments compare each saved claim with the source selected for its immutable action business date. They separate support impact, a newly evaluated result, and permission to release. A presentation-only v3 cannot clear a v1 claim still stale after a v2 rate change. An unchanged claim can receive an equivalence assessment without new recipe execution or moving its original citations.
 
 ## Ledger and release
 
 `store.py` opens a short explicit transaction per method. Existing databases must match the application ID, schema, integrity and foreign-key checks before mutation. Source/claim/action/assessment/check/preview/outbox records are append-only; source/render and JSON checksums are checked on read. Local database control remains a trusted boundary, not an authenticated audit service.
+
+Transactions verify retained ledger rows, and source observations append assessments. Cost grows with stored history; measurements cover small synthetic ledgers, not a large installation or long-running service.
 
 `engine.py` stores a preview for a specific claim, assessment, source-check generation and payload. Final release takes `BEGIN IMMEDIATE`, checks current generation/revision, expiry, current selection, support and exact payload, and inserts a uniquely bound outbox row. A competing importer or rechecker cannot silently reuse an old preview. Repeated release returns the original receipt, including after source failure. This is SQLite-local atomicity.
 

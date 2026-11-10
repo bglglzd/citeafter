@@ -25,6 +25,8 @@ The renderer has a version and hash. Exact citations refer to UTF-8 byte spans i
 
 Supported executable recipes record every policy field they read and their exact inputs/evaluator identity. Discount quotations use explicit thresholds, rates and currency with exact decimal rounding; shipping decisions use a supported destination and day count. Manual claims and unsupported currency/destination cases need review. Only the declared presentation field is automatically non-normative; arbitrary text is not classified as a harmless typo.
 
+Manual claims also record their own clause's kind and normative text, even when declared evidence points elsewhere. Coverage remains unproven. Blocked explanations retain changed recorded dependencies alongside their blockers; [dependency diagnostics revision 2](dependency-contract-v2.md) defines the evidence paths.
+
 An action's intended business time is fixed. Rechecking creates a new draft revision and retains prior support. History controls are read-only and cannot change the action's dispatch context. There is no scheduling/wait-until-business-time rule: a future draft can be eligible using current available knowledge while the operator leaves it pending.
 
 A preview binds the exact action revision, assessment, source/freshness generation and payload. Final release checks these facts inside one SQLite write transaction and inserts one idempotent local outbox record. If another process imports a changed source between preview and release, the old preview must fail without a dispatch. A refreshed preview can authorize an unaffected action without rerunning its recipe. Released records return their original receipt when repeated.
@@ -43,7 +45,7 @@ The synthetic policies are not customer data or a user study. This format does n
 
 ## Observable acceptance
 
-- Three policy versions and thirty annotated decisions total, with twenty development cases and ten independently authored held-out cases created only after the evaluation rules freeze.
+- Three policy versions, twenty original development decisions and the preserved ten-case first held-out experiment. After dependency diagnostics changed, freeze again and author ten fresh blind decisions; report each experiment separately without replacing earlier failures.
 - Every explicit supported dependency change found, with no unrelated stale declaration on the fixed set. Full three-class matrix and false/missed invalidations remain visible.
 - Correct source selection before, at and after business/knowledge boundaries; historical release never rewritten by later knowledge.
 - Ambiguous/unsupported support blocks action; cosmetic correction preserves valid support without clearing previously unresolved staleness.

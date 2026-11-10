@@ -154,5 +154,172 @@
     "total_holdout_decisions": 10,
     "original_reason_path_mismatches": 6,
     "disposition": "Bounded explanation completeness / causal-versus-context path ambiguity; no changes to frozen scorer, policy rules or original labels. Original strict failure remains visible."
+  },
+  "current_revision": 2,
+  "revision_2": {
+    "dependency_contract": {
+      "file": "docs/dependency-contract-v2.md",
+      "sha256": "2b2cb36cfa3dbd3dbe4c798354afa8dd279bcb26fbe4081e0f29f896abb00445"
+    },
+    "freeze": {
+      "frozen_at": "2026-11-10T20:24:43.828116+00:00",
+      "source_sha": "6865f2a76491be94cc19cdec843604db433de1ed",
+      "files": [
+        {
+          "path": "citeafter/policy.py",
+          "sha256": "a1ae2c140ad1f6b35176461a3d59f2f4c1195dde56b2b0ed8bf858e323a17915",
+          "bytes": 12297
+        },
+        {
+          "path": "citeafter/recipes.py",
+          "sha256": "9f35cf3882e921c2f3ffacbe176b5e14b6f09e999b3e25e733195c6ac6ed3426",
+          "bytes": 8378
+        },
+        {
+          "path": "citeafter/store.py",
+          "sha256": "a193be8de467045345706a4a9a95a081b78288ebbf3babbe6720c6db01cc3ba4",
+          "bytes": 8772
+        },
+        {
+          "path": "citeafter/engine.py",
+          "sha256": "fb4051bb583677f3b344e77b2e2148d2bd3058f923972f5cd48ca164ceab3090",
+          "bytes": 30880
+        },
+        {
+          "path": "citeafter/http_source.py",
+          "sha256": "08032e14d030db225e39a1e68e6f382013feae2b9e06ee10c9a7d261a3d0917d",
+          "bytes": 15461
+        },
+        {
+          "path": "citeafter/evaluation.py",
+          "sha256": "9321d9c9a32a8c112ebde8212e10f6b89c1da4f623e30fddbb1051ac01966539",
+          "bytes": 36114
+        },
+        {
+          "path": "pyproject.toml",
+          "sha256": "449dc8be1fa77f2b07ceb6178cb596c5470d6a54362535e381711671df0f3bd8",
+          "bytes": 792
+        },
+        {
+          "path": "requirements-dev.txt",
+          "sha256": "b4bb3887c89e7e289c6acab60d3d9dbd8e8f128171dea14f8ff5bf1c1730dd6a",
+          "bytes": 60
+        },
+        {
+          "path": "citeafter/examples/observations.json",
+          "sha256": "39be3a605a50314d50a4e596ef7835dc4bf5324cb04167019074bbef498978e5",
+          "bytes": 1793
+        },
+        {
+          "path": "citeafter/examples/policies/v1.json",
+          "sha256": "d28ea2ab4e2b94e7577f027671e430fb47a085f1afba8de1a16645627ee45495",
+          "bytes": 808
+        },
+        {
+          "path": "citeafter/examples/policies/v2.json",
+          "sha256": "714d93f7662add307d7d0d4e178a5e0b2bf0abcf7aa678bbb24096477d3824d2",
+          "bytes": 894
+        },
+        {
+          "path": "citeafter/examples/policies/v3.json",
+          "sha256": "f46122370115e3d80d89e3c177748a8a2da12553288c970681b381ff363ad226",
+          "bytes": 893
+        }
+      ],
+      "runtime": {
+        "python": "3.11.15",
+        "implementation": "CPython",
+        "sqlite": "3.53.1",
+        "os": "Windows",
+        "release": "10",
+        "machine": "AMD64"
+      },
+      "configuration": {
+        "source_ttl_seconds": 60,
+        "fixture_clock": "explicit callable engine clock, documented synthetic injection",
+        "network": "none during decision scoring",
+        "recipe_evaluator": "citeafter-recipes-v1",
+        "renderer": "citeafter-render-v1"
+      }
+    },
+    "holdout": {
+      "authoring": "Independent fresh-context agent; no implementation or outputs read before sealing",
+      "generation_started_at": "2026-11-10T20:30:46.689119+00:00",
+      "sealed_at": "2026-11-10T20:30:46.715721+00:00",
+      "original_seal_sha256": "f8d6bc6a7e1b444537b6028fbd7a5be40c4b5d7b5883dfb9f3c505681d0c743b",
+      "first_score_started_at": "2026-11-10T20:32:08.706507+00:00",
+      "first_score_finished_at": "2026-11-10T20:32:12.610792+00:00",
+      "first_report_file": "docs/results/heldout-first-v2.json",
+      "first_report_sha256": "42f325c6840bbc0b367a41d39f882b3ddf1b9900593d501dd8fff21e069c9019",
+      "files": [
+        {
+          "file": "examples/heldout-v2/J01.json",
+          "sha256": "5895801ecf9ff3ebc31688e008791827596a84dbd85f4ecea3158ed27a6da773",
+          "bytes": 15451
+        },
+        {
+          "file": "examples/heldout-v2/J02.json",
+          "sha256": "6ded51529e9ef90c994ed0266bc4188af518710693997d57143f74a14281d793",
+          "bytes": 15424
+        },
+        {
+          "file": "examples/heldout-v2/J03.json",
+          "sha256": "b35dc450e5b36b9bbf4f2ad47df743b82dd5ee5be80a888b08d59bbcbe5281b0",
+          "bytes": 14070
+        },
+        {
+          "file": "examples/heldout-v2/J04.json",
+          "sha256": "6c09fbd75c4469cc953fed49072372927190ae447ef5d881ec5721dd3840ecdc",
+          "bytes": 15641
+        },
+        {
+          "file": "examples/heldout-v2/J05.json",
+          "sha256": "e1bcfc6c50b7a980d5e8d9b9d072e9125121950910986cb52b56247ad2469ebb",
+          "bytes": 14082
+        },
+        {
+          "file": "examples/heldout-v2/J06.json",
+          "sha256": "6dfa5121ba5ab0c2f3bb5ce5795c384b637f8889249e8d080d0334c2dba250f0",
+          "bytes": 13420
+        },
+        {
+          "file": "examples/heldout-v2/J07.json",
+          "sha256": "c87da05ae3ec4b060a2318591a8ed1ab1a1154478bcc5b6fcfaa942b1eb76ae6",
+          "bytes": 13909
+        },
+        {
+          "file": "examples/heldout-v2/J08.json",
+          "sha256": "70a04ba0e53c3f4c284323c16684f581020999079dacf03c9a1189b74406dddf",
+          "bytes": 13379
+        },
+        {
+          "file": "examples/heldout-v2/J09.json",
+          "sha256": "97a9f646a1bbd2afeed76df2c6dffa52d3c38baff5284cf56728cc11753d2696",
+          "bytes": 14193
+        },
+        {
+          "file": "examples/heldout-v2/J10.json",
+          "sha256": "0de16aebc284fc89e6b1af05fec18d3b195887600b08678f83ae2162172837fa",
+          "bytes": 14379
+        }
+      ],
+      "scope": "Ten new synthetic decisions authored after revision-2 freeze; now published regression data"
+    },
+    "historical_regressions": [
+      {
+        "dataset": "development-v1",
+        "labels_unchanged": true,
+        "report_file": "docs/results/development-regression-v2.json",
+        "report_sha256": "77d6dbb0e2cb3b4361d7319237f04657c66c810c6204a96b9d72c881ba33df19",
+        "scope": "Revision-2 behavior against original revision-1 labels; not a blind result"
+      },
+      {
+        "dataset": "heldout-v1",
+        "labels_unchanged": true,
+        "report_file": "docs/results/heldout-regression-v2.json",
+        "report_sha256": "3f9ea586a3472a385c326fea8f21071d94e6e4913d9264c569136bf83e503b2f",
+        "scope": "Revision-2 behavior against original revision-1 labels; not a blind result"
+      }
+    ]
   }
 }

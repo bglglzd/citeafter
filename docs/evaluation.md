@@ -1,49 +1,59 @@
 # Evaluation
 
-These results describe one fixed synthetic workload, not customer accuracy or a language model. No model is used. The original failed comparisons remain in the published report.
+These are agent-authored synthetic policies and decisions, not customer accuracy or a human study. No language model is used. Original labels, failed reports and later runs are published separately.
 
-The workload is three policy versions and 30 annotated decisions: 20 development cases and 10 fresh-context cases authored after parser, selection, dependencies, freshness, release, evaluator and runtime were frozen. [Provenance and component hashes](results/provenance.json) bind the chronology and original case bytes. The cases are now public regression material; they are no longer blind.
+## Current frozen implementation
 
-| Observation | Development | First held-out attempt |
-| --- | ---: | ---: |
-| Fully matched annotated decisions | 20 / 20 | **8 / 10** |
-| Post-v2 support class matched | 20 / 20 | 10 / 10 |
-| Historical source/result queries matched | 140 / 140 | 70 / 70 |
-| Structured binary subset | 14 | 6 |
-| Affected TP / FP / FN | 8 / 0 / 0 | 2 / 0 / 0 |
-| Unsafe local outbox releases | 0 | 0 |
-| False release blocks | 0 | 0 |
+Source review found that a manual claim could omit evidence for its own clause. [Dependency diagnostics revision 2](dependency-contract-v2.md) now records that clause's kind and normative text alongside declared evidence, preserves changed dependencies in blocked explanations, and keeps manual coverage unproven. Manual claims cannot release.
 
-The combined class matrix has 10 affected, 10 unaffected and 10 needs-review decisions on its diagonal, with no off-diagonal classifications. This does **not** make the full annotation comparison 30/30: the original strict total is 28/30. Affected precision and recall are 1.0 on the explicitly supported binary subset of 20; manual/unsupported cases are reported separately.
+After the second freeze, a separate fresh-context curator authored and sealed ten new cases, J01–J10, without reading implementation or product outputs. The first score ran from a clean checkout before the author inspected their contents. [Provenance](results/provenance.json) binds the chronology, components, original case bytes and reports. The scorer was unchanged. These published cases are now regression data.
 
-## Original held-out disagreements
+| First revision-2 held-out attempt | Result |
+| --- | ---: |
+| Fully matched decisions | 10 / 10 |
+| Historical source/result queries | 120 / 120 |
+| Affected / unaffected / needs-review | 2 / 2 / 6 |
+| Citation/dependency mismatches | 0 |
+| Unsafe releases / previews | 0 / 0 |
+| False blocks / temporal errors | 0 / 0 |
+| Supported binary subset | 4 |
+| Affected TP / FP / FN | 2 / 0 / 0 |
 
-The [first held-out report](results/heldout-first-v1.json) remains byte-exact, with `passed:false` and six `reason_paths` mismatches across the two v3 branches and v2. The [development report](results/development-frozen-v1.json) uses the same frozen component hashes. No rule, scorer or original label was changed after held-out inspection.
+Affected precision and recall are 1.0 on that four-case supported subset. Six unsupported/manual cases are reported separately. This small fixed set does not predict accuracy on arbitrary policies.
 
-- H07 is blocked for unsupported currency. Its changed rate is present in recorded reads, `changed_required_paths` and the reverse path, but the blocking `reason_paths` field names only currency. The annotation expected both paths.
-- H09 is a manual claim with unproven dependency coverage and an unchanged shipping declaration. The blocking field names the primary manual clause; the annotation also expected the shipping context and a more specific manual-text pointer. No complete coverage, changed shipping edge or supported result is inferred.
+The [raw first report](results/heldout-first-v2.json) records 71 preview attempts, five obsolete-preview release probes and one explicit release followed by receipt replay. Two v3 handling branches are alternative histories of the same decisions, not twenty cases.
 
-Both actions remain blocked with null output and no outbox record. The contract does not define blocking `reason_paths` as an exhaustive union of changed and contextual fields; this remains an explanation-completeness / annotation-semantics limitation. The strict mismatch is retained. Three development diagnostics also disclose ancestor-versus-leaf reason specificity. These are not rewritten as matching labels.
+## Original experiment and retained failures
 
-## Execution and timing
+The first freeze used twenty development decisions and ten subsequently authored held-out cases. The [first development report](results/development-frozen-v1.json) matched 20/20. The [first held-out report](results/heldout-first-v1.json) remains byte-exact: `passed:false`, 8/10 fully matched cases and six `reason_paths` disagreements across H07/H09 and their branches. All thirty original support classes, outputs and temporal queries matched; the strict comparison still failed.
 
-Across the 30 decisions, v2 rechecking invokes the recipe evaluator 10 times. A full path invokes it 30 times and produces 20 supported results. Inspection, source updates and release checks perform no recipe evaluation. All decisions still receive lightweight dependency/temporal inspection. The first holdout visits four changed reverse edges; development visits twelve.
+H07 omitted a changed rate from its blocking explanation although the change appeared elsewhere. H09 did not read or cite its own manual clause when the caller declared only unrelated shipping evidence, so its normative-text change had no reverse edge. Source review prompted revision 2 and a new blind set. Both original cases were blocked with null output and no outbox entry.
 
-This is a reduction in recipe calls, **not measured latency savings**. The recipes are inexpensive, while immutable ledger writes and validation add work. Timing in each report includes Python profiling and independent per-case SQLite databases; it is not a shared 30-decision batch or production throughput benchmark. The first holdout ran on Windows, CPython 3.11.15, SQLite 3.53.1, Intel Core i7-12700K (20 logical CPUs). Its v2 update plus recheck totals about 240 ms, compared with about 53 ms for full read-only recomputation. Exact timings and environment are in the report.
+Revision 2 against the unchanged original labels produces these historical regressions:
+
+| Original labels, current rules | Strict result | Differences |
+| --- | ---: | --- |
+| [Development](results/development-regression-v2.json) | **18 / 20**, `passed:false` | D17 expects currency-only reasons; D19 expects shipping-only reads and the old manual explanation. Seven comparisons differ. |
+| [Held-out](results/heldout-regression-v2.json) | **9 / 10**, `passed:false` | H09 expects the old shipping-only initial reads. One comparison differs. |
+
+Their classes, outputs, history, release safety and false-block counts remain correct. Labels and scorer were not rewritten. These failed historical comparisons are not new blind results or adjusted passing scores. Do not combine different frozen implementations into one accuracy number.
+
+## Work and timing
+
+The new ten-case workload performs two actual recipe rechecks and visits seven changed reverse edges. Full recomputation invokes recipes ten times and yields four supported results. Inspection and source updates perform no recipe evaluation; every decision still receives dependency/temporal inspection.
+
+Fewer recipe calls did **not** improve latency. On Windows, CPython 3.11.15, SQLite 3.53.1 and an Intel Core i7-12700K (20 logical CPUs), summed v2 update plus recheck time was about 232 ms, versus about 48 ms for full read-only recomputation. Measurements include profiling and independent per-case SQLite databases, not shared-ledger throughput. Transactions verify stored history and source checks append assessments; cost grows with retained history. No large-ledger throughput claim is made.
 
 ## Reproduce
 
-From a source checkout:
+From a source checkout, choose new output directories:
 
 ```sh
-python -m citeafter.evaluation --cases citeafter/examples/development --output reports/dev
-python -m citeafter.evaluation --cases citeafter/examples/heldout --output reports/heldout
+python -m citeafter.evaluation --cases examples/heldout-v2 --output reports/current-heldout
+python -m citeafter.evaluation --cases citeafter/examples/development --output reports/original-development
+python -m citeafter.evaluation --cases citeafter/examples/heldout --output reports/original-heldout
 ```
 
-Choose new output directories: previous attempts are never overwritten. The development command exits 0. The original held-out comparison exits **1** because the six diagnostic-path mismatches are preserved. This expected strict failure must not be represented as a passing comparison. Runtime performance can differ; input and component hashes remain inspectable.
+The J comparison exits 0. Both comparisons against original labels exit **1** with the retained differences above. Previous attempts are never overwritten. The source package includes J01–J10; the wheel contains the original cases and can evaluate a supplied case directory with `--cases`.
 
-Primary correctness comparisons use independently authored expected classes, sources, exact outputs, dependencies and temporal queries. A fresh full-recomputation path is a secondary comparison. Agreement between two implementation paths alone is not accuracy evidence. Manual claims have unproven coverage and stay `needs_review`, including when their declared edge points at unchanged shipping data.
-
-Report all three classes, the explicitly eligible structured binary subset and its denominator, affected precision/recall, false/missed invalidations, unsafe releases, false blocks, source-selection mistakes, unsupported cases and citation/dependency mismatches. Count recipe executions separately from lightweight temporal/dependency inspection. The two v3 branches are alternative handling histories of the same decisions; they do not inflate the30-decision denominator.
-
-The interactive six-case example is an inspection journey, not the full evaluation corpus. Mutation, parser, corruption, transport and concurrent-process tests are separate from decision accuracy. Timing must name workload, runtime, machine and whether database setup, inspection or arithmetic is included. Synthetic results do not establish performance on customer policies or arbitrary prose.
+Primary comparisons use independently authored classes, sources, outputs, dependencies, gates and historical queries. Full recomputation is a secondary comparison against that gold; agreement between implementation paths alone is not correctness evidence. Parser, corruption, HTTP, race and UI recovery checks do not inflate decision denominators.
