@@ -96,6 +96,7 @@ class Engine:
             "age_seconds": None,
             "status": "empty",
             "reason": "no_successful_source_check",
+            "source_sha256": None,
         }
         if row is None:
             return base
@@ -109,6 +110,7 @@ class Engine:
             "checked_at": row["checked_at"],
             "age_seconds": age,
             "reason": row["reason"] if status != "expired" else "source_check_expired",
+            "source_sha256": row["source_sha"],
         }
 
     def _check(self, connection, now, status, reason, *, source_sha=None, url=None, etag=None, raw=None):
@@ -183,12 +185,22 @@ class Engine:
         }
 
     def ingest(self, raw):
-        require(
-            type(raw) is bytes and len(raw) <= 256 * 1024, "Import requires at most256KiB of original bytes"
-        )
+        require(type(raw) is bytes, "Import requires original bytes")
         with self.store.transaction(True) as connection:
             now = self._now(connection, True)
             self._sources(connection)
+            if len(raw) > 256 * 1024:
+                self._check(
+                    connection, now, "error", "import_byte_limit_prefix_only", raw=raw[: 256 * 1024 + 1]
+                )
+                self._record_all(connection, now)
+                return {
+                    "accepted": False,
+                    "error": {
+                        "code": "too_large",
+                        "message": "Import exceeds256KiB; retained only the bounded rejected prefix",
+                    },
+                }
             return self._ingest(connection, raw, now)
 
     def refresh(self, *, timeout=2.0):
@@ -276,6 +288,7 @@ class Engine:
         claim = unpack(row)
         require(
             claim["id"] == row["id"]
+            and claim["action_id"] == row["action_id"] == action["id"]
             and claim["revision"] == row["revision"]
             and claim["created_at"] == row["created_at"],
             "Claim identity mismatch",
@@ -333,6 +346,8 @@ class Engine:
         }[gate]
         if health["status"] != "fresh":
             gate, reason = "source_unavailable", health["reason"]
+        elif current is not None and not self._check_covers(sources, current, health["source_sha256"]):
+            gate, reason = "source_unavailable", "selected_version_not_covered_by_latest_check"
         if self._receipt(connection, action["id"]) is not None:
             gate, reason = "released", "original_outbox_receipt_retained"
         saved_source = next(item for item in sources if item["sha256"] == claim["result"]["source_sha256"])
@@ -363,6 +378,20 @@ class Engine:
             "reverse_paths": edges,
             "recipe_executed": False,
         }
+
+    def _check_covers(self, sources, selected, checked_sha):
+        checked = next((row for row in sources if row["sha256"] == checked_sha), None)
+        known = {}
+        for row in sources:
+            known.setdefault(row["version_id"], []).append(row)
+        visited = set()
+        while checked is not None and checked["version_id"] not in visited:
+            if checked["sha256"] == selected["sha256"]:
+                return True
+            visited.add(checked["version_id"])
+            parents = known.get(checked["parent"], [])
+            checked = parents[0] if len(parents) == 1 else None
+        return False
 
     def _save_assessment(self, connection, action, claim, now, assessment):
         assessment_id = new_id("assessment")

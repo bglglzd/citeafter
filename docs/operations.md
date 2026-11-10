@@ -16,7 +16,7 @@ Supported200 responses have JSON MIME (`application/json` or `application/*+json
 
 Maximum body:256 KiB. Default fetch deadline:2 seconds, including the isolated worker's DNS, TLS, headers and body. The parent terminates and reaps only its own worker on expiry; process scheduling and cleanup can add overhead. No hard real-time bound is claimed. A304 needs a prior conditional cache; it preserves the original source bytes and first observation. A concurrent changed cache requires another refresh.
 
-The body must match the typed policy schema. Unknown fields, duplicate keys, nonfinite numbers, invalid Unicode and malformed dates are refused. Policy observation time cannot be supplied in the body. Discount rates and money are bounded nonnegative decimal strings with at most two places; rates cannot exceed100. Use explicit-offset timestamps.
+The body must match the typed policy schema. Unknown fields, duplicate keys, nonfinite numbers, invalid Unicode and malformed dates are refused. Oversized imports retain a bounded rejected prefix, explicitly labelled as such, and block new release until a successful check. Checking an old version does not establish freshness for a newer selected descendant; recheck the current representation. Policy observation time cannot be supplied in the body. Discount rates and money are bounded nonnegative decimal strings with at most two places; rates cannot exceed100. Use explicit-offset timestamps.
 
 ## Recovery
 

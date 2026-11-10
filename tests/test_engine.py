@@ -243,6 +243,49 @@ class LedgerTests(unittest.TestCase):
             self.engine.as_of("draft", valid_at="2030-01-08T12:00:00Z", known_at="2030-01-04T12:00:00Z")
         )
 
+    def test_claim_cannot_be_reassigned_to_another_action_by_metadata_corruption(self):
+        self.action("first")
+        self.action("second")
+        self.advance()
+        self.engine.recheck("first")
+        with database(self.path) as connection:
+            connection.execute("DROP TRIGGER immutable_claims_update")
+            connection.execute("UPDATE claims SET action_id='second' WHERE action_id='first' AND revision=2")
+            connection.execute(SCHEMA["immutable_claims_update"])
+        before = self.path.read_bytes()
+        with self.assertRaises(CiteafterError) as failed:
+            self.engine.preview("second")
+        self.assertEqual(failed.exception.code, "integrity")
+        self.assertEqual(self.path.read_bytes(), before)
+        with database(self.path) as connection:
+            self.assertEqual(connection.execute("SELECT count(*) FROM outbox").fetchone()[0], 0)
+
+    def test_oversize_import_records_failure_and_blocks_until_successful_check(self):
+        self.action()
+        failed = self.engine.ingest(b" " * (256 * 1024 + 1))
+        self.assertFalse(failed["accepted"])
+        self.assertEqual(failed["error"]["code"], "too_large")
+        self.assertEqual(self.engine.state()["health"]["status"], "error")
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
+        self.engine.ingest(self.raw("v1"))
+        self.assertIsNotNone(self.engine.preview("draft"))
+
+    def test_checked_old_representation_cannot_freshen_a_selected_newer_version(self):
+        self.action()
+        self.action("friday", business_at="2030-01-04T12:00:00Z")
+        self.advance()
+        self.engine.recheck("draft")
+        self.engine.ingest(self.raw("v1"))
+        actions = {row["id"]: row for row in self.engine.state()["actions"]}
+        self.assertEqual(actions["draft"]["assessment"]["impact_class"], "unaffected")
+        self.assertEqual(actions["draft"]["assessment"]["gate"], "source_unavailable")
+        self.assertEqual(actions["friday"]["assessment"]["gate"], "allowed")
+        with self.assertRaises(CiteafterError):
+            self.engine.preview("draft")
+        self.engine.ingest(self.raw("v2"))
+        self.assertEqual(self.engine.preview("draft")["source_version"], "v2")
+
     def test_two_actual_processes_racing_same_release_produce_one_outbox(self):
         self.action()
         preview = self.engine.preview("draft")

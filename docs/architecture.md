@@ -30,7 +30,7 @@ Assessments compare each saved claim with the source selected for its immutable 
 
 `engine.py` stores a preview for a specific claim, assessment, source-check generation and payload. Final release takes `BEGIN IMMEDIATE`, checks current generation/revision, expiry, current selection, support and exact payload, and inserts a uniquely bound outbox row. A competing importer or rechecker cannot silently reuse an old preview. Repeated release returns the original receipt, including after source failure. This is SQLite-local atomicity.
 
-Freshness is distinct from semantic impact. Failed or expired checks block new release while retaining historical sources and original receipts. HTTP304 can refresh only the precise cached representation used for its conditional request. Observation is the engine's clock; identical received bytes never rewrite first observation. Operational clock rollback blocks new writes while read-only as-of queries remain available.
+Freshness is distinct from semantic impact. Failed or expired checks block new release while retaining historical sources and original receipts. A checked version covers itself and its explicit ancestors; checking an old ancestor cannot freshen a selected newer descendant. HTTP304 can refresh only the precise cached representation used for its conditional request. Observation is the engine's clock; identical received bytes never rewrite first observation. Operational clock rollback blocks new writes while read-only as-of queries remain available.
 
 ## Boundaries
 
