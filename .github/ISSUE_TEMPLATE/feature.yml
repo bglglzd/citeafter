@@ -1,0 +1,10 @@
+name: Feature request
+description: Describe a concrete unsupported workflow
+body:
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow and observable result
+      description: Explain the input, expected action and needed failure behavior.
+    validations:
+      required: true

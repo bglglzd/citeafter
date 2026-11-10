@@ -1,0 +1,9 @@
+{
+  "id": "quote-001",
+  "label": "Tuesday discount quotation",
+  "business_at": "2030-01-08T12:00:00Z",
+  "recipe": "discount_quote",
+  "clause": "standard",
+  "inputs": {"amount": "2000.00", "currency": "USD"},
+  "declared_paths": null
+}

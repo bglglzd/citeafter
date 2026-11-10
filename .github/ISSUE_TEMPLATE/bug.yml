@@ -1,0 +1,16 @@
+name: Bug report
+description: Reproduce incorrect behavior with synthetic input
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal commands and synthetic inputs
+      description: Include runtime/version, business time and knowledge time. Remove secrets and customer data.
+    validations:
+      required: true
