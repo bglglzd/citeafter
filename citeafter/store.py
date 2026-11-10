@@ -20,6 +20,26 @@ SCHEMA = {
     "cache": "CREATE TABLE cache (url TEXT PRIMARY KEY, source_sha TEXT NOT NULL REFERENCES sources(sha), etag TEXT, check_id INTEGER NOT NULL REFERENCES checks(id), checksum TEXT NOT NULL)",
 }
 IMMUTABLE = ("sources", "checks", "actions", "claims", "assessments", "previews", "outbox")
+JSON_BINDINGS = {
+    "actions": {"id": "id"},
+    "claims": {"id": "id", "action_id": "action_id", "revision": "revision", "created_at": "created_at"},
+    "assessments": {
+        "id": "id",
+        "action_id": "action_id",
+        "claim_id": "claim_id",
+        "known_at": "known_at",
+        "generation": "generation",
+    },
+    "previews": {
+        "id": "preview_id",
+        "action_id": "action_id",
+        "claim_id": "claim_id",
+        "assessment_id": "assessment_id",
+        "generation": "generation",
+        "created_at": "created_at",
+    },
+    "outbox": {"id": "id", "action_id": "action_id", "preview_id": "preview_id"},
+}
 for table in IMMUTABLE:
     for verb in ("UPDATE", "DELETE"):
         name = f"immutable_{table}_{verb.lower()}"
@@ -44,6 +64,7 @@ def record_checksum(table, record):
 def unpack(row):
     try:
         data = strict_json(row["data"].encode("utf-8"), limit=2 * 1024 * 1024)
+        require(type(data) is dict, "Ledger record must be an object", "integrity")
         require(value_hash(data) == row["checksum"], "Ledger checksum mismatch", "integrity")
         return data
     except (TypeError, KeyError, UnicodeError, CiteafterError) as error:
@@ -75,6 +96,15 @@ def _verify(connection):
             require(
                 record_checksum(table, row) == row["checksum"],
                 "Ledger metadata checksum mismatch",
+                "integrity",
+            )
+    # Validate every indexed identity before a latest/as-of query can skip a damaged row.
+    for table, bindings in JSON_BINDINGS.items():
+        for row in connection.execute("SELECT * FROM " + table):
+            data = unpack(row)
+            require(
+                all(row[column] == data.get(field) for column, field in bindings.items()),
+                "Ledger indexed metadata differs from its record",
                 "integrity",
             )
 

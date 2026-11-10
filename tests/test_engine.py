@@ -260,6 +260,25 @@ class LedgerTests(unittest.TestCase):
         with database(self.path) as connection:
             self.assertEqual(connection.execute("SELECT count(*) FROM outbox").fetchone()[0], 0)
 
+    def test_corrupt_revision_cannot_hide_a_newer_claim_from_selection_or_history(self):
+        self.action()
+        self.advance()
+        self.engine.recheck("draft")
+        with database(self.path) as connection:
+            connection.execute("DROP TRIGGER immutable_claims_update")
+            connection.execute("UPDATE claims SET revision=0 WHERE revision=2")
+            connection.execute(SCHEMA["immutable_claims_update"])
+        before = self.path.read_bytes()
+        for operation in (
+            self.engine.state,
+            lambda: self.engine.history("draft"),
+            lambda: self.engine.preview("draft"),
+        ):
+            with self.assertRaises(CiteafterError) as failed:
+                operation()
+            self.assertEqual(failed.exception.code, "integrity")
+        self.assertEqual(self.path.read_bytes(), before)
+
     def test_oversize_import_records_failure_and_blocks_until_successful_check(self):
         self.action()
         failed = self.engine.ingest(b" " * (256 * 1024 + 1))

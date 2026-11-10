@@ -397,7 +397,14 @@ class Engine:
         assessment_id = new_id("assessment")
         connection.execute(
             "INSERT INTO assessments VALUES (?,?,?,?,?,?,?)",
-            (assessment_id, action["id"], claim["id"], now, assessment["generation"], *pack(assessment)),
+            (
+                assessment_id,
+                action["id"],
+                claim["id"],
+                now,
+                assessment["generation"],
+                *pack({"id": assessment_id, "action_id": action["id"], **assessment}),
+            ),
         )
         return assessment_id
 
