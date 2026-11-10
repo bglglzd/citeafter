@@ -9,15 +9,15 @@ from .policy import CiteafterError, canonical, digest, require, strict_json, val
 APPLICATION_ID = 0x43495445
 SCHEMA_VERSION = 1
 SCHEMA = {
-    "meta": "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
-    "sources": "CREATE TABLE sources (sha TEXT PRIMARY KEY, raw BLOB NOT NULL, observed_at TEXT NOT NULL, rendered BLOB NOT NULL, render_sha TEXT NOT NULL)",
-    "checks": "CREATE TABLE checks (id INTEGER PRIMARY KEY, checked_at TEXT NOT NULL, status TEXT NOT NULL, reason TEXT NOT NULL, source_sha TEXT REFERENCES sources(sha), url TEXT, etag TEXT, received BLOB, received_sha TEXT)",
+    "meta": "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, checksum TEXT NOT NULL)",
+    "sources": "CREATE TABLE sources (sha TEXT PRIMARY KEY, raw BLOB NOT NULL, observed_at TEXT NOT NULL, rendered BLOB NOT NULL, render_sha TEXT NOT NULL, checksum TEXT NOT NULL)",
+    "checks": "CREATE TABLE checks (id INTEGER PRIMARY KEY, checked_at TEXT NOT NULL, status TEXT NOT NULL, reason TEXT NOT NULL, source_sha TEXT REFERENCES sources(sha), url TEXT, etag TEXT, received BLOB, received_sha TEXT, checksum TEXT NOT NULL)",
     "actions": "CREATE TABLE actions (id TEXT PRIMARY KEY, data TEXT NOT NULL, checksum TEXT NOT NULL)",
     "claims": "CREATE TABLE claims (id TEXT PRIMARY KEY, action_id TEXT NOT NULL REFERENCES actions(id), revision INTEGER NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL, checksum TEXT NOT NULL, UNIQUE(action_id, revision))",
     "assessments": "CREATE TABLE assessments (id TEXT PRIMARY KEY, action_id TEXT NOT NULL REFERENCES actions(id), claim_id TEXT NOT NULL REFERENCES claims(id), known_at TEXT NOT NULL, generation INTEGER NOT NULL, data TEXT NOT NULL, checksum TEXT NOT NULL)",
     "previews": "CREATE TABLE previews (id TEXT PRIMARY KEY, action_id TEXT NOT NULL REFERENCES actions(id), claim_id TEXT NOT NULL REFERENCES claims(id), assessment_id TEXT NOT NULL REFERENCES assessments(id), generation INTEGER NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL, checksum TEXT NOT NULL)",
     "outbox": "CREATE TABLE outbox (id TEXT PRIMARY KEY, action_id TEXT NOT NULL UNIQUE REFERENCES actions(id), preview_id TEXT NOT NULL REFERENCES previews(id), data TEXT NOT NULL, checksum TEXT NOT NULL)",
-    "cache": "CREATE TABLE cache (url TEXT PRIMARY KEY, source_sha TEXT NOT NULL REFERENCES sources(sha), etag TEXT, check_id INTEGER NOT NULL REFERENCES checks(id))",
+    "cache": "CREATE TABLE cache (url TEXT PRIMARY KEY, source_sha TEXT NOT NULL REFERENCES sources(sha), etag TEXT, check_id INTEGER NOT NULL REFERENCES checks(id), checksum TEXT NOT NULL)",
 }
 IMMUTABLE = ("sources", "checks", "actions", "claims", "assessments", "previews", "outbox")
 for table in IMMUTABLE:
@@ -30,6 +30,15 @@ for table in IMMUTABLE:
 
 def pack(data):
     return canonical(data), value_hash(data)
+
+
+def record_checksum(table, record):
+    values = {
+        key: {"bytes": len(value), "sha256": digest(value)} if type(value) is bytes else value
+        for key, value in dict(record).items()
+        if key != "checksum"
+    }
+    return value_hash({"table": table, "values": values})
 
 
 def unpack(row):
@@ -61,6 +70,13 @@ def _verify(connection):
         "Database integrity check failed",
         "integrity",
     )
+    for table in ("meta", "sources", "checks", "cache"):
+        for row in connection.execute("SELECT * FROM " + table):
+            require(
+                record_checksum(table, row) == row["checksum"],
+                "Ledger metadata checksum mismatch",
+                "integrity",
+            )
 
 
 class Store:
@@ -81,7 +97,10 @@ class Store:
             for statement in SCHEMA.values():
                 connection.execute(statement)
             for key, value in settings.items():
-                connection.execute("INSERT INTO meta VALUES (?,?)", (key, str(value)))
+                record = {"key": key, "value": str(value)}
+                connection.execute(
+                    "INSERT INTO meta VALUES (?,?,?)", (key, str(value), record_checksum("meta", record))
+                )
             connection.commit()
         except BaseException:
             connection.rollback()
@@ -125,8 +144,12 @@ def setting(connection, key):
 
 
 def set_setting(connection, key, value):
+    checksum = record_checksum("meta", {"key": key, "value": str(value)})
     require(
-        connection.execute("UPDATE meta SET value=? WHERE key=?", (str(value), key)).rowcount == 1,
+        connection.execute(
+            "UPDATE meta SET value=?,checksum=? WHERE key=?", (str(value), checksum, key)
+        ).rowcount
+        == 1,
         "Missing database configuration",
         "integrity",
     )

@@ -19,7 +19,7 @@ from .policy import (
     utc_now,
 )
 from .recipes import EVALUATOR, assess_support, check_inputs, evaluate_recipe, inspect_recipe
-from .store import Store, checked_blob, pack, set_setting, setting, unpack
+from .store import Store, checked_blob, pack, record_checksum, set_setting, setting, unpack
 
 
 def new_id(prefix):
@@ -114,9 +114,20 @@ class Engine:
     def _check(self, connection, now, status, reason, *, source_sha=None, url=None, etag=None, raw=None):
         generation = int(setting(connection, "generation")) + 1
         set_setting(connection, "generation", generation)
+        record = {
+            "id": generation,
+            "checked_at": now,
+            "status": status,
+            "reason": reason,
+            "source_sha": source_sha,
+            "url": url,
+            "etag": etag,
+            "received": raw,
+            "received_sha": digest(raw) if raw is not None else None,
+        }
         cursor = connection.execute(
-            "INSERT INTO checks (checked_at,status,reason,source_sha,url,etag,received,received_sha) VALUES (?,?,?,?,?,?,?,?)",
-            (now, status, reason, source_sha, url, etag, raw, digest(raw) if raw is not None else None),
+            "INSERT INTO checks VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (*record.values(), record_checksum("checks", record)),
         )
         return cursor.lastrowid
 
@@ -139,9 +150,16 @@ class Engine:
             "SELECT observed_at FROM sources WHERE sha=?", (source["sha256"],)
         ).fetchone()
         if existing is None:
+            record = {
+                "sha": source["sha256"],
+                "raw": raw,
+                "observed_at": now,
+                "rendered": source["rendered"]["body"],
+                "render_sha": source["rendered"]["sha256"],
+            }
             connection.execute(
-                "INSERT INTO sources VALUES (?,?,?,?,?)",
-                (source["sha256"], raw, now, source["rendered"]["body"], source["rendered"]["sha256"]),
+                "INSERT INTO sources VALUES (?,?,?,?,?,?)",
+                (*record.values(), record_checksum("sources", record)),
             )
         check_id = self._check(
             connection,
@@ -153,10 +171,7 @@ class Engine:
             etag=etag,
         )
         if url:
-            connection.execute(
-                "INSERT INTO cache VALUES (?,?,?,?) ON CONFLICT(url) DO UPDATE SET source_sha=excluded.source_sha,etag=excluded.etag,check_id=excluded.check_id",
-                (url, source["sha256"], etag, check_id),
-            )
+            self._cache(connection, url, source["sha256"], etag, check_id)
         metrics = self._record_all(connection, now)
         return {
             "accepted": True,
@@ -226,9 +241,7 @@ class Engine:
                 url=url,
                 etag=response.etag,
             )
-            connection.execute(
-                "UPDATE cache SET check_id=?,etag=? WHERE url=?", (check_id, response.etag, url)
-            )
+            self._cache(connection, url, cached["source_sha"], response.etag, check_id)
             return {
                 "accepted": True,
                 "not_modified": True,
@@ -236,6 +249,13 @@ class Engine:
                 "elapsed_ms": response.elapsed_ms,
                 **self._record_all(connection, now),
             }
+
+    def _cache(self, connection, url, source_sha, etag, check_id):
+        record = {"url": url, "source_sha": source_sha, "etag": etag, "check_id": check_id}
+        connection.execute(
+            "INSERT INTO cache VALUES (?,?,?,?,?) ON CONFLICT(url) DO UPDATE SET source_sha=excluded.source_sha,etag=excluded.etag,check_id=excluded.check_id,checksum=excluded.checksum",
+            (*record.values(), record_checksum("cache", record)),
+        )
 
     def _action(self, connection, action_id):
         row = connection.execute("SELECT * FROM actions WHERE id=?", (identifier(action_id),)).fetchone()
@@ -279,7 +299,9 @@ class Engine:
             return None
         receipt = unpack(row)
         require(
-            receipt["id"] == row["id"] and receipt["action_id"] == action_id,
+            receipt["id"] == row["id"]
+            and receipt["action_id"] == action_id
+            and receipt["preview_id"] == row["preview_id"],
             "Receipt identity mismatch",
             "integrity",
         )
@@ -480,6 +502,8 @@ class Engine:
                 "preview_id": new_id("preview"),
                 "action_id": action_id,
                 "action_revision": claim["revision"],
+                "claim_id": claim["id"],
+                "assessment_id": assessment_id,
                 "created_at": now,
                 "payload": self._payload(action, claim, assessment),
                 "source_version": assessment["selected_source_version"],
@@ -507,6 +531,16 @@ class Engine:
             ).fetchone()
             require(row is not None, "Preview does not exist", "not_found")
             preview = unpack(row)
+            require(
+                preview["preview_id"] == row["id"]
+                and preview["action_id"] == row["action_id"]
+                and preview["claim_id"] == row["claim_id"]
+                and preview["assessment_id"] == row["assessment_id"]
+                and preview["generation"] == row["generation"]
+                and preview["created_at"] == row["created_at"],
+                "Preview identity mismatch",
+                "integrity",
+            )
             action = self._action(connection, row["action_id"])
             old = self._receipt(connection, action["id"])
             if old is not None:
@@ -514,11 +548,18 @@ class Engine:
             now = self._now(connection, True)
             sources = self._sources(connection)
             claim = self._claim(connection, action, sources)
+            stored = connection.execute(
+                "SELECT * FROM assessments WHERE id=?", (row["assessment_id"],)
+            ).fetchone()
+            evidence = unpack(stored)
             require(
-                preview["preview_id"] == row["id"]
-                and preview["generation"] == row["generation"]
-                and preview["created_at"] == row["created_at"],
-                "Preview identity mismatch",
+                stored["action_id"] == action["id"]
+                and stored["claim_id"] == preview["claim_id"]
+                and evidence["claim_id"] == preview["claim_id"]
+                and stored["known_at"] == evidence["known_at"]
+                and stored["generation"] == evidence["generation"]
+                and evidence["generation"] == preview["generation"],
+                "Preview assessment binding mismatch",
                 "integrity",
             )
             require(

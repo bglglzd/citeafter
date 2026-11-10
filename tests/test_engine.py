@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from citeafter.engine import Engine
 from citeafter.policy import CiteafterError
+from citeafter.store import SCHEMA
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "citeafter/examples/policies"
 ROOT = Path(__file__).resolve().parents[1]
@@ -189,10 +190,46 @@ class LedgerTests(unittest.TestCase):
         with database(self.path) as connection:
             connection.execute("DROP TRIGGER immutable_claims_update")
             connection.execute("UPDATE claims SET data='{}'")
+            connection.execute(SCHEMA["immutable_claims_update"])
         before = self.path.read_bytes()
         with self.assertRaises(CiteafterError):
             self.engine.preview("draft")
         self.assertEqual(self.path.read_bytes(), before)
+
+    def test_freshness_setting_corruption_cannot_turn_an_expired_source_into_permission(self):
+        self.action()
+        self.clock.now = "2030-01-04T12:30:00Z"
+        self.assertEqual(self.engine.state()["health"]["status"], "expired")
+        with database(self.path) as connection:
+            connection.execute("UPDATE meta SET value='86400' WHERE key='ttl_seconds'")
+        before = self.path.read_bytes()
+        with self.assertRaises(CiteafterError) as failed:
+            self.engine.preview("draft")
+        self.assertEqual(failed.exception.code, "integrity")
+        self.assertEqual(self.path.read_bytes(), before)
+        with database(self.path) as connection:
+            self.assertEqual(connection.execute("SELECT count(*) FROM outbox").fetchone()[0], 0)
+
+    def test_observation_metadata_corruption_cannot_silently_change_history(self):
+        self.action()
+        with database(self.path) as connection:
+            connection.execute("DROP TRIGGER immutable_sources_update")
+            connection.execute("UPDATE sources SET observed_at='2029-01-01T00:00:00.000000Z'")
+            connection.execute(SCHEMA["immutable_sources_update"])
+        with self.assertRaises(CiteafterError) as failed:
+            self.engine.as_of("draft", valid_at="2030-01-08T12:00:00Z", known_at="2030-01-02T12:00:00Z")
+        self.assertEqual(failed.exception.code, "integrity")
+
+    def test_check_time_metadata_corruption_cannot_freshen_an_old_source(self):
+        self.action()
+        with database(self.path) as connection:
+            connection.execute("DROP TRIGGER immutable_checks_update")
+            connection.execute("UPDATE checks SET checked_at='2030-01-04T12:30:00.000000Z'")
+            connection.execute(SCHEMA["immutable_checks_update"])
+        self.clock.now = "2030-01-04T12:30:00Z"
+        with self.assertRaises(CiteafterError) as failed:
+            self.engine.preview("draft")
+        self.assertEqual(failed.exception.code, "integrity")
 
     def test_ledger_mutation_is_refused_and_clock_rollback_cannot_authorize(self):
         self.action()
