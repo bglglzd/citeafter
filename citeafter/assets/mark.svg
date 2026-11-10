@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Citeafter</title>
+  <defs>
+    <linearGradient id="back" x1="10" y1="8" x2="44" y2="51" gradientUnits="userSpaceOnUse"><stop stop-color="#eff9fc"/><stop offset="1" stop-color="#c8e0e8"/></linearGradient>
+    <linearGradient id="front" x1="23" y1="17" x2="53" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".98"/><stop offset="1" stop-color="#e8f4f5" stop-opacity=".9"/></linearGradient>
+    <filter id="shadow" x="4" y="5" width="57" height="59" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#183e4a" flood-opacity=".12"/></filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <rect x="10.5" y="8.5" width="34" height="42" rx="9" fill="url(#back)" stroke="#adcbd6"/>
+    <path d="M18 20h15M18 27h10" stroke="#7ba9b8" stroke-width="2" stroke-linecap="round"/>
+    <rect x="21.5" y="16.5" width="32" height="40" rx="9" fill="url(#front)" stroke="#91b5bf"/>
+    <path d="M30 29h14M30 36h14M30 43h8" stroke="#397e88" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

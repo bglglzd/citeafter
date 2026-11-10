@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <title>Citeafter — policy support</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./app.css">
+  <script src="./app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#decisions">Skip to decisions</a>
+  <div class="shell">
+    <header class="app-header">
+      <h1 class="brand-heading"><a class="brand" href="./"><img src="./mark.svg" alt="" width="42" height="42"><span>Citeafter</span></a></h1>
+      <span id="mode-label" class="mode-label">Loading workspace</span>
+      <div class="header-actions">
+        <button id="reload-state" class="button secondary" type="button" disabled>Reload state</button>
+        <button id="refresh-source" class="button primary" type="button" disabled>Fetch source</button>
+      </div>
+    </header>
+
+    <div id="status-message" class="status-message" role="status" aria-live="polite">Connecting to the local workspace…</div>
+    <div id="error-message" class="notice error" role="alert" hidden></div>
+
+    <section id="recorded-controls" class="panel recorded-controls" aria-label="Recorded view" hidden>
+      <div><span class="eyebrow">Read-only recording</span><p>Inspect saved synthetic results. Run locally to fetch, recheck and release.</p></div>
+      <label class="stage-label">Saved stage<select id="recorded-stage"></select></label>
+    </section>
+
+    <section id="health-panel" class="health-panel" aria-label="Source availability" hidden>
+      <div class="health-heading"><span id="health-badge" class="badge neutral"></span><span id="health-reason"></span></div>
+      <dl class="health-facts"><div><dt>Last checked</dt><dd id="health-checked"></dd></div><div><dt>Reported age / limit</dt><dd id="health-age"></dd></div><div><dt>Workspace time</dt><dd id="workspace-now"></dd></div></dl>
+    </section>
+
+    <main id="workspace" class="workspace" aria-busy="true" hidden>
+      <aside class="panel source-panel" aria-labelledby="sources-heading">
+        <div class="section-heading"><h2 id="sources-heading">Sources</h2><span class="quiet">Rendered policy</span></div>
+        <nav id="source-list" class="source-list" aria-label="Source version"></nav>
+        <div id="source-metadata"></div>
+        <details id="source-text-details" class="source-disclosure">
+          <summary>Policy text</summary>
+          <p id="source-range" class="range-caption" hidden></p>
+          <pre id="source-text" class="source-text" tabindex="0" aria-label="Selected rendered policy"></pre>
+        </details>
+      </aside>
+
+      <div class="decision-workspace">
+        <section id="decisions" class="panel decisions-panel" aria-labelledby="decisions-heading" tabindex="-1">
+          <div class="section-heading"><h2 id="decisions-heading">Decisions</h2><span class="quiet">Times shown in UTC</span></div>
+          <div class="table-tools">
+            <label class="search-label"><span class="sr-only">Find decision</span><input id="decision-search" type="search" placeholder="Find decision" autocomplete="off" disabled></label>
+            <label class="filter-label">Show<select id="decision-filter" disabled><option value="all">All decisions</option><option value="attention">Needs attention</option><option value="released">Released</option></select></label>
+          </div>
+          <div class="table-scroll" role="region" aria-label="Decision list" tabindex="0"><table class="decision-table">
+            <thead><tr><th scope="col">Decision</th><th scope="col">Business time</th><th scope="col">Support</th><th scope="col">Outbox gate</th></tr></thead>
+            <tbody id="decision-rows"></tbody>
+          </table></div>
+          <p id="decision-empty" class="empty-state" hidden>No decisions match this view.</p>
+        </section>
+
+        <section id="decision-detail" class="panel detail-panel" aria-labelledby="detail-heading" tabindex="-1">
+          <div class="section-heading"><h2 id="detail-heading">Select a decision</h2><span id="detail-revision" class="quiet"></span></div>
+          <div id="detail-content"><p class="empty-state">Choose a decision to inspect its saved result, source support and release gate.</p></div>
+        </section>
+
+        <section id="history-panel" class="panel history-panel" aria-labelledby="history-heading">
+          <div class="section-heading"><h2 id="history-heading">As-of history</h2><span class="badge neutral">Read-only</span></div>
+          <p class="section-note">Inspect applicability and observation cutoff separately. This query does not change the decision’s business time.</p>
+          <label id="saved-query-label" class="saved-query-label" hidden>Saved query<select id="saved-query"></select></label>
+          <form id="history-form">
+            <div class="history-fields">
+              <label>Business time<input id="history-valid" name="valid_at" type="text" spellcheck="false" autocomplete="off" placeholder="2030-01-08T12:00:00Z" required disabled><span class="field-hint">When the policy applies</span></label>
+              <label>Known at<input id="history-known" name="known_at" type="text" spellcheck="false" autocomplete="off" placeholder="2030-01-04T15:00:00Z" required disabled><span class="field-hint">What had been observed</span></label>
+            </div>
+            <div class="form-footer"><span class="quiet">Use Z or an explicit UTC offset.</span><button id="inspect-history" class="button secondary" type="submit" disabled>Inspect history</button></div>
+          </form>
+          <div id="history-result" class="history-result"><p class="empty-state">Select a decision and inspect a time pair.</p></div>
+        </section>
+      </div>
+    </main>
+
+    <details id="local-instructions" class="panel local-instructions">
+      <summary>Run the local workflow</summary>
+      <p>Install the release wheel, then start a synthetic workspace.</p>
+      <pre><code>python -m pip install citeafter-0.1.0-py3-none-any.whl
+citeafter demo --serve</code></pre>
+      <p class="quiet">Release writes one record to the local outbox. It does not send an email or payment.</p>
+    </details>
+    <noscript><p class="notice error">JavaScript is required to inspect source support and review action previews.</p></noscript>
+  </div>
+
+  <dialog id="preview-dialog" aria-labelledby="preview-heading">
+    <div class="dialog-heading"><div><span class="eyebrow">Exact revision</span><h2 id="preview-heading" tabindex="-1">Review outbox release</h2></div><button id="close-preview" class="button quiet-button" type="button">Close</button></div>
+    <p class="section-note">Review the server’s payload before creating one local outbox record.</p>
+    <div id="preview-content"></div>
+    <p id="preview-error" class="notice error" role="alert" hidden></p>
+    <div class="dialog-footer"><span id="preview-expiry" class="quiet"></span><button id="release-preview" class="button primary" type="button" disabled>Release to outbox</button></div>
+  </dialog>
+</body>
+</html>

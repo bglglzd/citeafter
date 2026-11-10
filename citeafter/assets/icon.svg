@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Citeafter</title>
+  <rect x="9" y="7" width="35" height="44" rx="10" fill="#dceef3" stroke="#719da9" stroke-width="2"/>
+  <rect x="22" y="16" width="33" height="42" rx="10" fill="#f6fbfc" stroke="#3d7f8c" stroke-width="2"/>
+  <path d="M31 29h14M31 37h14M31 45h8" stroke="#276c79" stroke-width="3" stroke-linecap="round"/>
+</svg>
