@@ -2,7 +2,7 @@
 
 Versioned evidence impact analysis for saved policy decisions and pending actions. A changed field links to the claims that read it and the drafts that need another check. Business time and knowledge time are separate.
 
-This checkout is under development. No release is available yet.
+![Synthetic workspace: D03 remains stale after the title correction; released records and unrelated shipping retain support.](docs/screenshot.png)
 
 ## Run locally
 
@@ -21,7 +21,7 @@ On Windows, use `.venv\Scripts\python.exe -m pip install .` and `.venv\Scripts\c
 
 Observe v2: two Tuesday discount drafts become stale; Friday's released record and domestic shipping retain their support. Inspect a changed field and its exact citation. Recheck D02, review its preview, then release it to the **local SQLite outbox**. Observe v3: the title correction leaves unrechecked D03 stale. History queries cannot authorize a release.
 
-The demo uses synthetic policies and an explicit fixture clock. A static recording will be published with the release; mutations run locally through the same Python engine.
+The demo uses synthetic policies and an explicit fixture clock. The [recorded example](https://bglglzd.github.io/citeafter/) inspects saved engine outputs; mutations run locally through the same Python engine. The [release](https://github.com/bglglzd/citeafter/releases/tag/v0.1.0) includes a wheel, source package and recorded-demo ZIP.
 
 ## Use your own structured policy
 
@@ -45,4 +45,4 @@ Only `discount_quote` and `shipping_days` have supported executable semantics. M
 
 The outbox is local authorization; it does not send customer emails, payments or external transactions. Checksums detect persisted corruption; they do not authenticate an untrusted publisher or an attacker who controls the database.
 
-[Specification](docs/spec.md) · [Architecture](docs/architecture.md) · [Operations](docs/operations.md) · [Evaluation](docs/evaluation.md) · [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)
+[Specification](docs/spec.md) · [Architecture](docs/architecture.md) · [Operations](docs/operations.md) · [Evaluation and original disagreements](docs/evaluation.md) · [Related tools](docs/comparison.md) · [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)

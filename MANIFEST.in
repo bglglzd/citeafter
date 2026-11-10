@@ -1,5 +1,5 @@
 include CHANGELOG.md CONTRIBUTING.md THIRD_PARTY_NOTICES.md requirements-dev.txt
-recursive-include docs *.md *.png
+recursive-include docs *.md *.png *.json
 recursive-include examples *.json
 recursive-include scripts *.py
 recursive-include .github/ISSUE_TEMPLATE *.yml
