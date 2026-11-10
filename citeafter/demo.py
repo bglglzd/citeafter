@@ -9,6 +9,14 @@ from .store import setting
 
 EXAMPLES = Path(__file__).resolve().parent / "examples"
 SHOWCASE = ("D01", "D02", "D03", "D12", "D14", "D16")
+LABELS = {
+    "D01": "Friday quote",
+    "D02": "Tuesday quote · 2,000.00 USD",
+    "D03": "Tuesday quote · 1,000.05 USD",
+    "D12": "Tuesday domestic shipping",
+    "D14": "Tuesday VIP quote",
+    "D16": "Dispatch exception note",
+}
 STAMPS = {"v1": "2030-01-03T09:00:00Z", "v2": "2030-01-04T15:00:00Z", "v3": "2030-01-08T09:00:00Z"}
 
 
@@ -40,7 +48,7 @@ class Demo:
                 case = strict_json((EXAMPLES / "development" / (name + ".json")).read_bytes())
                 self.engine.create_action(
                     case["id"],
-                    label=case["title"],
+                    label=LABELS[name],
                     business_at=case["business_at"],
                     recipe=case["recipe"],
                     clause=case["clause"],
