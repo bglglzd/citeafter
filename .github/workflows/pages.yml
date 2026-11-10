@@ -1,0 +1,48 @@
+name: Publish accepted demo
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Published release tag
+        required: true
+        default: v0.1.0
+      manifest_sha256:
+        description: SHA256 of the independently accepted release manifest
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download accepted release bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$MANIFEST_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          mkdir "$RUNNER_TEMP/citeafter-release"
+          gh release download "$RELEASE_TAG" --pattern "citeafter-demo-${RELEASE_TAG#v}.zip" --pattern release-manifest.json --dir "$RUNNER_TEMP/citeafter-release"
+          python3 scripts/prepare-pages.py --manifest "$RUNNER_TEMP/citeafter-release/release-manifest.json" --archive "$RUNNER_TEMP/citeafter-release/citeafter-demo-${RELEASE_TAG#v}.zip" --source-sha "$GITHUB_SHA" --manifest-sha256 "$MANIFEST_SHA256" --out "$RUNNER_TEMP/citeafter-pages"
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: ${{ runner.temp }}/citeafter-pages
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
