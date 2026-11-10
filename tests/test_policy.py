@@ -181,6 +181,22 @@ class TemporalEvidence(unittest.TestCase):
         )
         self.assertFalse(manual["coverage_proven"])
         self.assertEqual(assess_support(manual, now)["impact_class"], "needs_review")
+        own_text = "/clauses/manual_note/normative_text"
+        self.assertIn(own_text, manual["read_values"])
+        self.assertIn(own_text, {item["pointer"] for item in manual["citations"]})
+        assessment = assess_support(manual, now)
+        self.assertEqual(assessment["changed_required_paths"], [own_text])
+        self.assertEqual(assessment["reason_paths"], [own_text, "/clauses/shipping/days"])
+
+    def test_unsupported_input_explanation_retains_independent_changed_values(self):
+        first, second, _ = sources()
+        saved = evaluate_recipe(first, "discount_quote", "standard", {"amount": "2000.00", "currency": "EUR"})
+        current = inspect_recipe(second, "discount_quote", "standard", saved["inputs"])
+        assessment = assess_support(saved, current)
+        self.assertEqual(assessment["impact_class"], "needs_review")
+        self.assertEqual(
+            assessment["reason_paths"], ["/clauses/standard/currency", "/clauses/standard/rate_percent"]
+        )
 
     def test_unsupported_currency_is_not_converted_and_parent_citation_is_bound(self):
         first = sources()[0]

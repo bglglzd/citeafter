@@ -18,14 +18,23 @@ class EvaluationTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.owned.cleanup()
 
-    def test_all_predeclared_sqlite_branches_have_the_correct_denominators_and_no_unsafe_release(
+    def test_original_development_labels_remain_visible_after_dependency_contract_expansion(
         self,
     ):
         report = self.report
-        self.assertTrue(report["passed"], [row["mismatches"] for row in report["cases"]])
+        self.assertFalse(report["passed"])
+        issues = {row["id"]: row["mismatches"] for row in report["cases"] if row["mismatches"]}
+        self.assertEqual(set(issues), {"D17", "D19"})
+        self.assertEqual(sum(map(len, issues.values())), 7)
+        self.assertTrue(
+            all(issue["category"] == "citation_dependency" for rows in issues.values() for issue in rows)
+        )
+        self.assertEqual({issue["field"] for issue in issues["D17"]}, {"reason_paths"})
+        self.assertEqual({issue["field"] for issue in issues["D19"]}, {"reason_paths", "read_values"})
         self.assertTrue(report["input_bytes_unchanged"])
         summary = report["summary"]
         self.assertEqual(summary["decisions"], 20)
+        self.assertEqual(summary["passed_decisions"], 18)
         self.assertEqual(
             summary["confusion_matrix"],
             {
@@ -47,7 +56,7 @@ class EvaluationTests(unittest.TestCase):
         self.assertEqual(summary["unsafe_releases"], 0)
         self.assertEqual(summary["old_preview_release_attempts"], 16)
         self.assertEqual(summary["false_blocks"], 0)
-        self.assertEqual(summary["diagnostic_specificity_differences"], 3)
+        self.assertEqual(summary["diagnostic_specificity_differences"], 0)
 
     def test_actual_profile_distinguishes_lightweight_inspection_from_recipe_execution(
         self,

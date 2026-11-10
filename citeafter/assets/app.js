@@ -182,7 +182,7 @@ function updateControls() {
 
 function canRecheck(action) {
   return Boolean(action && !action.receipt && action.assessment.gate === "stale"
-    && action.assessment.impact_class === "affected" && action.claim.result.result_status === "supported");
+    && action.assessment.impact_class === "affected");
 }
 
 function initialAction(actions) {

@@ -60,7 +60,6 @@ def citation(source, path):
 def inspect_recipe(source, recipe, clause, inputs, declared_paths=None):
     check_inputs(recipe, inputs)
     require(isinstance(clause, str) and 1 <= len(clause) <= 80 and clause.isprintable(), "Invalid clause ID")
-    primary = pointer(["clauses", clause])
     if recipe == "manual_claim":
         require(
             type(declared_paths) is list
@@ -73,6 +72,10 @@ def inspect_recipe(source, recipe, clause, inputs, declared_paths=None):
         for path in declared_paths:
             tokens(path)
             paths.append(path)
+        for name in ("kind", "normative_text"):
+            own_path = pointer(["clauses", clause, name])
+            if not any(tokens(own_path)[: len(tokens(path))] == tokens(path) for path in paths):
+                paths.append(own_path)
     else:
         require(declared_paths is None, "Supported recipe dependencies are computed, not supplied")
         paths = [pointer(["clauses", clause, name]) for name in READS[recipe]]
@@ -95,7 +98,10 @@ def inspect_recipe(source, recipe, clause, inputs, declared_paths=None):
     reasons, reason_paths = [], []
     if recipe == "manual_claim":
         reasons.append("manual_dependency_coverage_unproven")
-        reason_paths.append(primary)
+        reason_paths.extend(path for path in declared_paths if tokens(path)[-1:] != ["kind"])
+        own_text = pointer(["clauses", clause, "normative_text"])
+        if not any(tokens(own_text)[: len(tokens(path))] == tokens(path) for path in reason_paths):
+            reason_paths.append(own_text)
     if missing:
         reasons.append("missing_dependency")
         reason_paths.extend(missing)
@@ -189,7 +195,8 @@ def assess_support(saved, current):
         return {
             "impact_class": "needs_review",
             "reason_codes": current["reason_codes"] or ["dependency_coverage_unproven"],
-            "reason_paths": current["reason_paths"] or [pointer(["clauses", current["clause"]])],
+            "reason_paths": sorted(set(current["reason_paths"]) | set(changed))
+            or [pointer(["clauses", current["clause"]])],
             "changed_required_paths": changed,
         }
     if changed:

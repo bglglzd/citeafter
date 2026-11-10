@@ -128,6 +128,22 @@ class LedgerTests(unittest.TestCase):
         with self.assertRaises(CiteafterError):
             self.engine.preview("draft")
 
+    def test_manual_primary_text_change_has_a_cited_reverse_edge_without_proving_coverage(self):
+        created = self.action(
+            recipe="manual_claim",
+            clause="manual_note",
+            inputs={"text": "Review"},
+            declared_paths=["/clauses/shipping/days"],
+        )
+        self.advance()
+        action = self.engine.state()["actions"][0]
+        own_text = "/clauses/manual_note/normative_text"
+        self.assertIn(own_text, created["claim"]["result"]["read_values"])
+        self.assertTrue(any(edge["field"] == own_text for edge in action["assessment"]["reverse_paths"]))
+        self.assertFalse(action["claim"]["result"]["coverage_proven"])
+        self.assertEqual(action["assessment"]["gate"], "needs_review")
+        self.assertIsNone(action["receipt"])
+
     def test_reopen_failure_expiry_and_original_receipt_replay_do_not_rewrite_history(self):
         self.action(business_at="2030-01-04T12:00:00Z")
         preview = self.engine.preview("draft")
