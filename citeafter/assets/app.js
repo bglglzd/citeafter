@@ -472,6 +472,20 @@ function showRecordedQuery(index) {
   renderHistory(query.result);
 }
 
+function renderPreviewContents(preview, action) {
+  const payload = preview.payload;
+  const decision = action.label && action.label !== action.id ? `${action.label} · ${action.id}` : action.id;
+  const metadata = element("dl", { class: "detail-meta" },
+    fact("Decision", decision), fact("Revision", preview.action_revision),
+    fact("Business time · UTC", element("time", { datetime: payload.business_at, text: payload.business_at })), fact("Policy support", payload.source_version));
+  if (payload.citation_source_version && payload.citation_source_version !== payload.source_version) {
+    metadata.append(fact("Original citation version", payload.citation_source_version));
+  }
+  $("preview-content").replaceChildren(metadata,
+    section("Inputs", valueGrid(payload.inputs)), section("Output", valueGrid(payload.output)),
+    rawDetails("Payload JSON", payload));
+}
+
 async function previewAction(actionId) {
   if (!live()) throw new Error("A release preview requires the local workspace.");
   clearPreview();
@@ -489,8 +503,7 @@ async function previewAction(actionId) {
     throw new Error("The release preview no longer matches this decision. Request a fresh preview.");
   }
   model.preview = preview;
-  $("preview-content").replaceChildren(element("dl", { class: "detail-meta" }, fact("Decision", action.label || action.id), fact("Revision", preview.action_revision), fact("Supported source", preview.source_version)),
-    section("Exact payload", valueGrid(preview.payload), rawDetails("Payload JSON", preview.payload)));
+  renderPreviewContents(preview, action);
   $("preview-expiry").textContent = `The server expires this preview after ${preview.expires_in_seconds} seconds.`;
   $("preview-error").hidden = true; $("preview-dialog").showModal(); $("preview-heading").focus();
   announce("Review the exact payload before releasing to the local outbox.");
